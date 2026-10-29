@@ -1,8 +1,10 @@
 # SlickSyntax
 
+[![AI USED](https://img.shields.io/badge/AI%20USED-%E2%9C%A8-blue)](https://openai.com/)
+
 **SlickSyntax** is a lightweight, browser-based pattern builder for **Google Docs** and **Microsoft Word**. Paste sample text, generate a target-specific Find pattern, refine the result, and copy it. No account, installation, build step, or backend is required.
 
-The entire app is contained in [`index.html`](./index.html), so it can run locally or be hosted as a static site on GitHub Pages.
+The app is a small static site made up of [`index.html`](./index.html), [`styles.css`](./styles.css), and [`script.js`](./script.js), so it can run locally or be hosted on GitHub Pages.
 
 ## Features
 
@@ -99,3 +101,6 @@ Reference material: [Google Docs Find and replace](https://support.google.com/do
 ## Terms
 
 Provided **as is**, without warranties, to the extent allowed by law. Features, availability, and terms may change. The in-app **Terms of Service** contains additional notices; neither this README nor those notices are legal advice.
+
+
+

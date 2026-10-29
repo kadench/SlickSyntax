@@ -1,231 +1,484 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f5f7fa"><title>SlickSyntax — Google Docs & Word</title>
-<style>
-:root{color-scheme:light;--bg:#f5f7fa;--surface:#ffffff;--surface-soft:#edf1f6;--text:#101b2c;--muted:#33445b;--border:#8493a7;--border-soft:#b7c3d1;--accent:#113c88;--accent-text:#ffffff;--selected:#dbe8ff;--focus:#a42900;--focus-gap:#ffffff;--note:#e8f0fc;--shadow:0 8px 25px rgba(16,27,44,.06)}
-html[data-theme="dark"]{color-scheme:dark;--bg:#0b1220;--surface:#131e30;--surface-soft:#1e2d43;--text:#f6f9ff;--muted:#d4dfea;--border:#9eafc4;--border-soft:#667e9a;--accent:#bdd5ff;--accent-text:#101b2c;--selected:#2a4568;--focus:#ffd76e;--focus-gap:#0b1220;--note:#223955;--shadow:0 8px 25px rgba(0,0,0,.25)}
-*{box-sizing:border-box}html{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}body{margin:0;background:var(--bg);color:var(--text)}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}a{color:var(--accent)}button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--focus);outline-offset:3px;box-shadow:0 0 0 5px var(--focus-gap)}
-header{background:var(--surface);border-bottom:1px solid var(--border-soft)}.bar{max-width:1100px;margin:auto;padding:10px 24px;min-height:78px;display:flex;align-items:center;gap:16px}.brand{font-weight:800;font-size:20px;letter-spacing:-.6px;white-space:nowrap;color:var(--text)}.brand small{font-weight:500;color:var(--muted);font-size:12px;margin-left:8px;letter-spacing:0}.tabs{display:flex;gap:5px;align-items:center;margin-left:auto}.tab{border:1px solid transparent;background:transparent;color:var(--text);padding:11px 14px;border-radius:10px;font-weight:650;min-height:44px}.tab:hover,.mini:hover{background:var(--surface-soft)}.tab[aria-selected=true]{background:var(--selected);border-color:var(--border-soft);color:var(--text)}.theme-toggle{display:flex;align-items:center;justify-content:center;min-width:46px;min-height:46px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);flex-shrink:0}.theme-toggle:hover{background:var(--surface-soft)}.theme-toggle svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.app{max-width:1100px;padding:34px 24px;margin:auto}.view[hidden],.options[hidden]{display:none!important}.eyebrow{color:var(--muted);text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:1px;margin:0 0 10px}h1{font-size:clamp(26px,3.5vw,38px);line-height:1.2;margin:0 0 10px;letter-spacing:-1px}p.intro{color:var(--muted);line-height:1.65;margin:0 0 25px;max-width:75ch}.workspace{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;align-items:stretch}.workspace.vertical{grid-template-columns:minmax(0,1fr)}.panel{background:var(--surface);border:1px solid var(--border-soft);border-radius:16px;padding:24px;box-shadow:var(--shadow);min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.panel-head h2{font-size:17px;margin:0}.hint,.subtle,.source{font-size:13px;color:var(--muted)}.mode{display:flex;background:var(--surface-soft);padding:4px;border:1px solid var(--border-soft);border-radius:11px;width:max-content;max-width:100%;gap:3px}.mode button{border:1px solid transparent;border-radius:8px;background:transparent;padding:10px 13px;color:var(--text);font-size:14px;font-weight:700;min-height:44px}.mode button[aria-pressed=true],.guide-controls button[aria-pressed=true]{background:var(--selected);border-color:var(--border);color:var(--text)}.field-label{display:block;font-weight:700;font-size:14px;margin:20px 0 9px}.input-box{width:100%;height:260px;resize:none;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px;line-height:1.6;color:var(--text);tab-size:4;font:15px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}.input-box::placeholder,.search::placeholder{color:var(--muted);opacity:1}.options{display:flex;gap:17px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:14px;color:var(--text)}.options label{display:flex;gap:9px;align-items:center;cursor:pointer;min-height:44px}.options input{accent-color:var(--accent);width:19px;height:19px}.output-box{height:260px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:15px;font:15px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text);user-select:text;cursor:text}.copy{width:100%;margin-top:13px;background:var(--accent);color:var(--accent-text);border:2px solid var(--accent);border-radius:10px;padding:13px 15px;font-weight:750;min-height:48px}.copy:hover{filter:brightness(.92)}.subtle{line-height:1.6;margin:14px 0 0}.key{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:2px 6px;background:var(--surface-soft);font:12px ui-monospace,monospace;color:var(--text)}.shortcuts{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:17px}.note{background:var(--note);border:1px solid var(--border-soft);border-radius:11px;padding:13px 15px;font-size:13px;color:var(--text);line-height:1.7;margin-top:20px}.source{margin-top:24px;line-height:1.6}.source a{color:var(--accent)}.guide-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}.search{width:100%;border:1px solid var(--border);border-radius:11px;padding:14px 15px;background:var(--surface);color:var(--text);min-height:48px}.guide-controls{display:flex;gap:12px;align-items:center;margin:16px 0;flex-wrap:wrap}.guide-controls span{font-size:13px;color:var(--muted)}.guide-list{border:1px solid var(--border-soft);border-radius:14px;background:var(--surface);overflow:auto;max-height:min(63vh,640px)}.guide-row{display:grid;grid-template-columns:minmax(110px,.8fr) minmax(110px,.8fr) minmax(160px,1.6fr) auto;gap:12px;align-items:center;padding:13px 17px;border-bottom:1px solid var(--border-soft)}.guide-row:last-child{border-bottom:0}.guide-row.head{position:sticky;top:0;background:var(--surface-soft);color:var(--text);font-weight:800;font-size:12px;letter-spacing:.5px;text-transform:uppercase;z-index:1}.guide-row code{font:14px ui-monospace,Consolas,monospace;overflow-wrap:anywhere}.guide-row .desc{font-size:14px;color:var(--muted);line-height:1.5}.mini{border:1px solid var(--border);background:var(--surface);padding:10px 12px;border-radius:8px;font-size:13px;font-weight:700;color:var(--text);min-height:44px;min-width:64px}.empty{padding:26px;text-align:center;color:var(--muted)}.status{min-height:20px;font-size:13px;color:var(--text);margin:9px 0 0}
-@media(max-width:850px){.bar{padding:12px 16px;flex-wrap:wrap}.tabs{order:3;width:100%;justify-content:space-between;margin-left:0}.tab{flex:1;padding:9px 7px;font-size:13px}.theme-toggle{margin-left:auto}.app{padding:26px 16px}.workspace{grid-template-columns:1fr}.panel{padding:18px}.input-box,.output-box{height:220px}.guide-row{grid-template-columns:1fr 1fr auto}.guide-row .desc{grid-column:1 / -1;grid-row:2}.guide-row.head{grid-template-columns:1fr 1fr auto}.guide-row.head .desc{display:none}}
-@media(max-width:440px){.brand small{display:none}.tab{font-size:12px}}
-@media(prefers-reduced-motion:no-preference){button{transition:background .12s ease}}
-.target-tabs{display:flex;gap:6px;margin:0 0 14px;align-items:center;flex-wrap:wrap}.target-tabs .tab{background:var(--surface);border:1px solid var(--border-soft);min-width:155px;text-align:center}.target-tabs .tab[aria-selected="true"]{background:var(--selected);border:2px solid var(--accent)}.site-footer{margin-top:auto;border-top:1px solid var(--border-soft);background:var(--surface);color:var(--muted)}.footer-inner{max-width:1100px;margin:auto;padding:18px 24px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between;font-size:13px}.footer-inner nav{display:flex;gap:12px}.footer-inner button{border:0;background:transparent;color:var(--text);text-decoration:underline;text-underline-offset:3px;padding:9px 5px;min-height:44px}.footer-inner button:hover{background:var(--surface-soft)}body{min-height:100vh;display:flex;flex-direction:column}.app{width:100%;flex:1}.legal-copy{max-width:850px;line-height:1.75}.legal-copy h2{font-size:19px;margin:12px 0 5px}.legal-copy p{color:var(--muted);margin:0 0 20px}.legal-copy code{color:var(--text)}
-
-/* Paired editor panels: equal dimensions in either arrangement. */
-.workspace{align-items:stretch}.workspace>.panel{display:flex;flex-direction:column;min-width:0}
-.workspace .input-box,.workspace .output-box{height:clamp(220px,35vh,340px);min-height:220px;max-height:none;flex:none;width:100%;margin-top:12px}
-.workspace .input-box,.workspace .output-box{border:0;border-radius:0;background:transparent;padding:4px 0;box-shadow:none}
-.workspace .input-box:focus-visible,.workspace .output-box:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
-.workspace .panel{background:var(--surface)}
-.workspace.vertical{grid-template-columns:minmax(0,1fr)}
-.workspace.vertical .input-box,.workspace.vertical .output-box{height:clamp(170px,24vh,260px);min-height:170px}
-.layout-switch{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin:0 0 12px}
-.layout-switch .layout-label{font-size:13px;color:var(--muted);margin-right:5px}
-.layout-switch button{display:grid;place-items:center;width:46px;height:44px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:9px}
-.layout-switch button[aria-pressed=true]{background:var(--selected);border:2px solid var(--accent)}
-.layout-switch svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2}
-.workspace .panel-head{margin-bottom:8px}.workspace .field-label{margin-top:12px}
-.workspace .shortcuts{margin-top:auto;padding-top:14px}.workspace .note{margin-top:12px}
-@media(max-width:850px){.workspace:not(.vertical){grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:620px){.workspace{grid-template-columns:1fr!important}.workspace .input-box,.workspace .output-box{height:190px;min-height:190px}}
-
-/* Insertable syntax tokens, consistent in both themes. */
-.token-tray{margin-top:16px;padding:17px 19px;background:var(--surface);border:1px solid var(--border-soft);border-radius:15px;box-shadow:var(--shadow)}
-.token-heading{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}.token-heading h2{font-size:16px;margin:0}.token-heading p{color:var(--muted);font-size:13px;margin:0;line-height:1.5}
-.token-row{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.token-button{display:inline-flex;align-items:center;gap:9px;min-height:44px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);padding:8px 12px;text-align:left;font-weight:650;cursor:grab}.token-button:hover{background:var(--selected)}.token-button:active{cursor:grabbing}.token-button code{font:12px ui-monospace,Consolas,monospace;color:var(--muted)}
-.token-tray .subtle{margin-top:10px}.drop-ready{outline:3px dashed var(--focus)!important;outline-offset:-4px!important;background:var(--selected)!important}
-/* Compact toolbar below the complete editor workspace. */
-.token-tray{margin-top:12px;padding:12px 14px}
-.token-heading h2{font-size:14px}.token-heading p{font-size:12px}
-.token-row{gap:6px;margin-top:9px}
-.token-button{flex:0 0 auto;gap:6px;min-height:36px;padding:6px 9px;font-size:12px;border-radius:7px}
-.token-button code{font-size:11px}
-@media(max-width:500px){.token-button{flex:0 0 auto;justify-content:center}}
-</style>
-</head>
-<body>
-<header><div class="bar"><div class="brand">SlickSyntax <small>Offline regex helper</small></div><nav class="tabs" aria-label="Pages"><button class="tab" data-page="guide" aria-selected="false">Syntax guide</button></nav><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.5 1.5m9.8 9.8 1.5 1.5M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5"/><circle cx="12" cy="12" r="4"/></svg></button></div></header>
-<main class="app">
-<section class="view" id="docs"><p class="eyebrow">Google Docs / RE2</p><h1>Turn text into a search pattern.</h1><p class="intro">Paste a sample. Letters, numbers, and spaces become flexible patterns. Wrap exact text in {...}.</p><nav class="target-tabs" aria-label="Choose pattern target"><button type="button" class="tab" data-page="docs" aria-selected="true">Google Docs</button><button type="button" class="tab" data-page="word" aria-selected="false">Microsoft Word</button></nav><div class="layout-switch" role="group" aria-label="Arrange editor panels"><span class="layout-label">Layout</span><button type="button" data-layout="horizontal" data-target="docs" aria-label="Place input and output side by side" title="Side by side" aria-pressed="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M12 3v18"/></svg></button><button type="button" data-layout="vertical" data-target="docs" aria-label="Stack input above output" title="Stack vertically" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 12h20"/></svg></button></div><div class="workspace" id="workspace-docs"><section class="panel"><div class="panel-head"><h2>Input</h2><span class="hint">Ctrl+V paste · Enter newline</span></div><label class="field-label" for="input-docs">Sample text or {exact text}</label><textarea class="input-box" id="input-docs" spellcheck="false" placeholder="Type or paste sample text…" aria-describedby="help-docs"></textarea><div class="options" id="opts-docs"><label><input type="checkbox" id="digits-docs" checked> Any number</label><label><input type="checkbox" id="space-docs" checked> Whitespace runs</label></div><p class="subtle" id="help-docs"><span class="key">Enter</span> newline · <span class="key">Ctrl+V</span> paste. Letters, numbers and whitespace become flexible patterns. Wrap exact text in {...}, for example {Invoice} 123.</p></section><section class="panel"><div class="panel-head"><h2>Output</h2><span class="hint">Shift+Enter copies</span></div><label class="field-label" for="out-docs">Generated search pattern</label><textarea class="output-box" id="out-docs" spellcheck="false" placeholder="Generated pattern appears here…" aria-label="Generated search pattern"></textarea><button class="copy" data-copy="docs">Copy output · Shift+Enter</button><p class="status" id="status-docs" role="status" aria-live="polite"></p><div class="shortcuts"><span><span class="key">Shift+Enter</span> copy (output focused) · <span class="key">Ctrl+C</span> copy selected text</span></div><div class="note">Google Docs: Ctrl+H → Match using regular expressions.</div></section></div><section class="token-tray" aria-label="Insert Google Docs pattern tokens"><div class="token-heading"><h2>Insert patterns</h2><p>Drag into an editor or click to insert at the input cursor.</p></div><div class="token-row" id="tokens-docs"></div><p class="subtle">Quick type: <span class="key">:start:</span>, <span class="key">:end:</span> (Docs), or <span class="key">:para:</span> (Word). Type <span class="key">&#123;exact text&#125;</span> to keep text literal. Hover or focus a token for a hint.</p></section></section>
-<section class="view" id="word" hidden><p class="eyebrow">Microsoft Word / Wildcards</p><h1>Build a Word search pattern.</h1><p class="intro">Paste sample text to generate Word wildcard search syntax. Letters become character patterns. Wrap exact text in {...}.</p><nav class="target-tabs" aria-label="Choose pattern target"><button type="button" class="tab" data-page="docs" aria-selected="true">Google Docs</button><button type="button" class="tab" data-page="word" aria-selected="false">Microsoft Word</button></nav><div class="layout-switch" role="group" aria-label="Arrange editor panels"><span class="layout-label">Layout</span><button type="button" data-layout="horizontal" data-target="word" aria-label="Place input and output side by side" title="Side by side" aria-pressed="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M12 3v18"/></svg></button><button type="button" data-layout="vertical" data-target="word" aria-label="Stack input above output" title="Stack vertically" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 12h20"/></svg></button></div><div class="workspace" id="workspace-word"><section class="panel"><div class="panel-head"><h2>Input</h2><span class="hint">Ctrl+V paste · Enter newline</span></div><label class="field-label" for="input-word">Sample text or {exact text}</label><textarea class="input-box" id="input-word" spellcheck="false" placeholder="Type or paste sample text…" aria-describedby="help-word"></textarea><div class="options" id="opts-word"><label><input type="checkbox" id="digits-word" checked> Any number</label><label><input type="checkbox" id="space-word" checked> Whitespace runs</label></div><p class="subtle" id="help-word"><span class="key">Enter</span> newline · <span class="key">Ctrl+V</span> paste. Letters, numbers and whitespace become flexible patterns. Wrap exact text in {...}, for example {Invoice} 123.</p></section><section class="panel"><div class="panel-head"><h2>Output</h2><span class="hint">Word advanced Find</span></div><label class="field-label" for="out-word">Generated search pattern</label><textarea class="output-box" id="out-word" spellcheck="false" placeholder="Generated pattern appears here…" aria-label="Generated search pattern"></textarea><button class="copy" data-copy="word">Copy output · Shift+Enter</button><p class="status" id="status-word" role="status" aria-live="polite"></p><div class="shortcuts"><span><span class="key">Shift+Enter</span> copy (output focused) · <span class="key">Ctrl+C</span> copy selected text</span></div><div class="note">Word: Advanced Find → More → Use wildcards.</div></section></div><section class="token-tray" aria-label="Insert Word pattern tokens"><div class="token-heading"><h2>Insert patterns</h2><p>Drag into an editor or click to insert at the input cursor.</p></div><div class="token-row" id="tokens-word"></div><p class="subtle">Quick type: <span class="key">:start:</span>, <span class="key">:end:</span> (Docs), or <span class="key">:para:</span> (Word). Type <span class="key">&#123;exact text&#125;</span> to keep text literal. Hover or focus a token for a hint.</p></section></section>
-<section class="view" id="guide" hidden><div class="guide-top"><div><p class="eyebrow">Reference / Searchable</p><h1>Syntax guide.</h1><p class="intro">Search by a character you pasted, a token like <code>\d</code>, or a description like “tab”, “digit”, or “non-breaking space”.</p></div></div><label class="field-label" for="guide-search">Search syntax and characters</label><input class="search" id="guide-search" type="search" spellcheck="false" placeholder="Try: 3, tab, U+00A0, [, number, \d, ^t" autocomplete="off"><div class="guide-controls"><div class="mode" role="group" aria-label="Guide target"><button data-guide="docs" aria-pressed="true">Google Docs</button><button data-guide="word" aria-pressed="false">Microsoft Word</button></div><span id="guide-count"></span></div><div class="guide-list" id="guide-list" aria-label="Searchable syntax reference"></div><p class="source">References: <a href="https://support.google.com/docs/answer/62754" target="_blank" rel="noopener noreferrer">Google Docs Find and Replace</a> · <a href="https://github.com/google/re2/wiki/syntax" target="_blank" rel="noopener noreferrer">RE2 syntax</a> · <a href="https://support.microsoft.com/en-us/office/find-and-replace-text-c6728c16-469e-43cd-afe4-7708c6c779b7" target="_blank" rel="noopener noreferrer">Word Find and Replace</a>. Some operations are context-dependent; Word wildcards are not a one-to-one mapping to RE2.</p></section>
-<section class="view legal-view" id="privacy" hidden><p class="eyebrow">Legal / Privacy</p><h1>Privacy Policy</h1><p class="intro">Last updated: October 29, 2026</p><div class="panel legal-copy"><h2>Your text stays in your browser</h2><p>SlickSyntax processes text and patterns locally in your browser. We do not operate an account system or server that collects, stores, or receives your pasted text, generated expressions, or searches. We do not intentionally use analytics, advertising trackers, or cookies.</p><h2>Local preference</h2><p>Your selected appearance (light or dark) is saved in your browser's local storage under <code>slicksyntax-theme</code>. You can clear it using your browser's site-data controls. Text you type into the app is not saved in that local storage.</p><h2>Hosting and external links</h2><p>If this site is hosted on GitHub Pages or another provider, that provider may process connection information, including IP addresses and access logs, under its own policies. Opening external documentation links sends you to third-party websites with their own privacy practices.</p><h2>Changes</h2><p>This policy may be changed at any time. The date above identifies this version. We do not promise advance notice of revisions.</p><p>This is a plain-language description, not legal advice.</p></div></section>
-<section class="view legal-view" id="terms" hidden><p class="eyebrow">Legal / Terms</p><h1>Terms of Service</h1><p class="intro">Last updated: October 29, 2026</p><div class="panel legal-copy"><h2>Use of SlickSyntax</h2><p>SlickSyntax is a free text and search-pattern utility. You are responsible for verifying generated expressions, their compatibility with the target application, and any changes you make using them.</p><h2>Provided as is</h2><p>The website and all its content are provided “as is” and “as available”, without warranties of any kind to the extent permitted by applicable law. Patterns may not work in every version of Microsoft Word or Google Docs.</p><h2>Changes and availability</h2><p>The service, its features, these terms, and its availability may change or be discontinued at any time without prior notice.</p><h2>Limitation</h2><p>To the extent permitted by law, the site operator is not liable for damages or losses arising from use of the tool. Nothing here excludes rights or obligations that cannot legally be excluded.</p><h2>Not legal advice</h2><p>These terms and the privacy policy are informational drafts, not legal advice. They should be reviewed by a qualified professional before a public launch if legal compliance is important.</p></div></section>
-</main>
-<footer class="site-footer"><div class="footer-inner"><span>© <span id="copyright-year">2026</span> SlickSyntax. All rights reserved.</span><nav aria-label="Legal"><button type="button" data-legal="privacy">Privacy Policy</button><button type="button" data-legal="terms">Terms of Service</button></nav><span>Runs locally in your browser.</span></div></footer>
-<script>
-'use strict';
-const $=id=>document.getElementById(id);
-const state={docs:{},word:{},guide:'docs',page:'docs'};
-const guide=[
-['Any digit','3 7 0123456789 number digit','\\d','[0-9]','Matches a single digit'],
-['One or more digits','123 42 number digits numeric','\\d+','[0-9]@','Matches a run of digits'],
-['Not a digit','abc nondigit','\\D','[!0-9]','Matches a non-digit character'],
-['Any letter','abc xyz alphabet letter','[A-Za-z]','[A-Za-z]','One ASCII letter'],
-['Any word character','abc_123 word underscore','\\w','[A-Za-z0-9_]','Letter, digit, or underscore'],
-['Not a word character','punctuation nonword','\\W','[!A-Za-z0-9_]','Non-word character'],
-['Any whitespace','space tab whitespace blank','\\s','Not directly available','A whitespace character (Word: spaces/tabs only)'],
-['One or more whitespace','  tab whitespace multiple','\\s+','Not directly available','A run of spaces/tabs (Docs also matches other whitespace)'],
-['Space','  space U+0020',' ',' ','Literal regular space'],
-['Tab','\t tab U+0009 horizontal tab','\\t','^t','Horizontal tab; in Word Find, ^t may require wildcards off'],
-['Non-breaking space','  nbsp U+00A0 no break space','\\x{A0}','^s','Non-breaking space; Word uses a special character code'],
-['Line feed','\n newline line break U+000A','\\n','^l','Line feed; Word uses ^l for manual line break'],
-['Carriage return / paragraph','\r paragraph newline U+000D','\\r','^13','Word paragraph mark in wildcard mode; Word behavior varies by context'],
-['Any character','x any dot wildcard','.','?','One arbitrary character'],
-['Zero or more','* asterisk repeat','a*','a*','Repeat preceding item zero or more times (Word * has different semantics)'],
-['One or more','+ plus repeat','a+','a@','Repeat preceding item one or more times'],
-['Optional','? question zero one','a?','a{0,1}','Docs optional character; Word repetition rules differ'],
-['Exactly N','{3} repeat count','a{3}','a{3}','Exactly three occurrences'],
-['At least N','{3,} repeat minimum','a{3,}','a{3,}','At least three occurrences'],
-['Between N and M','{2,5} repeat range','a{2,5}','a{2,5}','Two to five occurrences'],
-['Character set','[abc] set either','[abc]','[abc]','Any one character in this set'],
-['Negated set','[^abc] exclude not','[^abc]','[!abc]','Any one character except those listed'],
-['Either / alternation','| or pipe','cat|dog','Not available','Word has no direct alternation operator'],
-['Grouping','(abc) capture','(abc)','(abc)','Group a sequence of characters'],
-['Non-capturing group','(?:abc) group','(?:abc)','Not available','Noncapturing groups are RE2 syntax'],
-['Start of line','^ caret beginning start','^','Not direct','Start-of-line anchors are not equivalent across modes'],
-['End of line','$ dollar ending end','$','Not direct','End-of-line anchors are not equivalent across modes'],
-['Word start boundary','\\b beginning word','\\b','<','Word start; RE2 \\b matches both word boundaries'],
-['Word end boundary','\\b end word','\\b','>','Word end; RE2 \\b matches both word boundaries'],
-['Literal period','. dot full stop U+002E','\\.','.','Search for a literal period'],
-['Literal asterisk','* star U+002A','\\*','\\*','Search for * itself'],
-['Literal plus','+ U+002B','\\+','+','Search for + itself'],
-['Literal question mark','? U+003F','\\?','\\?','Search for ? itself'],
-['Literal opening parenthesis','( U+0028','\\(','\\(','Search for ( itself'],
-['Literal closing parenthesis',') U+0029','\\)','\\)','Search for ) itself'],
-['Literal square brackets','[ ] U+005B U+005D','\\[ \\]','\\[ \\]','Search for literal brackets'],
-['Literal braces','{ } U+007B U+007D','\\{ \\}','\\{ \\}','Search for literal braces'],
-['Literal backslash','\\ U+005C slash','\\\\','\\\\','Search for a backslash'],
-['Literal pipe','| U+007C','\\|','|','Search for a vertical bar'],
-['Literal dollar','$ U+0024 currency','\\$','$','Search for a dollar sign'],
-['Literal caret','^ U+005E','\\^','^','Search for a caret'],
-['Case-insensitive flag','ignore case (?i)','(?i)','Match case off','Google RE2 inline flag; Word uses a checkbox'],
-['Lookahead','(?=) ahead','Not supported','Not supported','Not supported in RE2 or Word wildcard search'],
-['Lookbehind','(?<=) behind','Not supported','Not supported','Not supported in RE2 or Word wildcard search'],
-['Match a group in replacement','$1 group replacement capture','$1','\\1','Replacement-field group reference, not a Find pattern']
-];
-function escDocs(c){if(c==='\t')return '\\t';if(c==='\n')return '\\n';if(c==='\r')return '\\r';if(c==='\u00a0')return '\\x{A0}';return /[\\.^$|?*+()[\]{}]/.test(c)?'\\'+c:c;}
-function escWord(c){if(c==='\t')return '^t';if(c==='\n')return '^l';if(c==='\r')return '^13';if(c==='\u00a0')return '^s';return /[\\?*()[\]{}@<>]/.test(c)?'\\'+c:c;}
-function generate(target){
- const sample=$('input-'+target).value;
- const digits=$('digits-'+target).checked;
- const space=$('space-'+target).checked;
- const esc=target==='docs'?escDocs:escWord;
- let out='';
- for(let i=0;i<sample.length;){
-  // {...} is the deliberately simple SlickSyntax escape hatch for exact text.
-  // An unclosed marker is treated as normal text, never discarded.
-  if(sample[i]==='{'){
-   const close=sample.indexOf('}',i+1);
-   if(close!==-1){out+=Array.from(sample.slice(i+1,close),esc).join('');i=close+1;continue;}
-  }
-  // Named tokens are processed before ordinary letters. Exact braces take priority.
-  const alias=Object.keys(tokenDefs).find(k=>sample.startsWith(k,i)&&tokenDefs[k][target]);
-  if(alias){out+=tokenDefs[alias][target];i+=alias.length;continue;}
-  const c=sample[i];
-  if(/[a-z]/.test(c)){
-   while(i<sample.length&&/[a-z]/.test(sample[i]))i++;
-   out+=target==='docs'?'[a-z]+':'[a-z]@';continue;
-  }
-  if(/[A-Z]/.test(c)){
-   while(i<sample.length&&/[A-Z]/.test(sample[i]))i++;
-   out+=target==='docs'?'[A-Z]+':'[A-Z]@';continue;
-  }
-  if(digits&&/[0-9]/.test(c)){
-   while(i<sample.length&&/[0-9]/.test(sample[i]))i++;
-   out+=target==='docs'?'\\d+':'[0-9]@';continue;
-  }
-  if(space&&/[ \t\u00a0]/.test(c)){
-   let part='';while(i<sample.length&&/[ \t\u00a0]/.test(sample[i]))part+=sample[i++];
-   if(target==='docs')out+='[ \\t\\x{A0}]+';
-   else if(/^ +$/.test(part))out+=' @';
-   else out+=Array.from(part,esc).join('');
-   continue;
-  }
-  out+=esc(c);i++;
- }
- return out;
-}
-function refresh(target){$('out-'+target).value=generate(target);$('status-'+target).textContent='';}
-async function copyText(value){if(!value)return false;try{await navigator.clipboard.writeText(value);return true}catch{const t=document.createElement('textarea');t.value=value;t.style.position='fixed';t.style.left='-9999px';document.body.append(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch{}t.remove();return ok;}}
-async function copyOutput(target){const ok=await copyText($('out-'+target).value);$('status-'+target).textContent=ok?'Copied to clipboard.':'Clipboard blocked. Select the result and use Ctrl+C.';}
-function switchPage(page){state.page=page;document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==page);document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.page===page)));location.hash=page; if(page==='guide')$('guide-search').focus();else if(page==='docs'||page==='word')$('input-'+page).focus();else document.querySelector('#'+page+' h1').setAttribute('tabindex','-1'),document.querySelector('#'+page+' h1').focus();}
-function renderGuide(){const q=$('guide-search').value.toLowerCase(),t=state.guide;const matches=guide.filter(row=>row.join(' ').toLowerCase().includes(q));const list=$('guide-list');list.replaceChildren();const head=document.createElement('div');head.className='guide-row head';['Concept / character','Pattern','Description',''].forEach((s,i)=>{const d=document.createElement('div');d.className=i===2?'desc':'';d.textContent=s;head.append(d)});list.append(head);for(const row of matches){const item=document.createElement('div');item.className='guide-row';const name=document.createElement('div');name.textContent=row[0];const code=document.createElement('code');code.textContent=row[t==='docs'?2:3];const desc=document.createElement('div');desc.className='desc';desc.textContent=row[4];const btn=document.createElement('button');btn.className='mini';btn.textContent='Copy';btn.setAttribute('aria-label','Copy '+row[0]+' pattern');btn.disabled=code.textContent==='Not supported'||code.textContent==='Not available'||code.textContent==='Not direct'||code.textContent==='Match case off';btn.addEventListener('click',async()=>{if(await copyText(code.textContent)){btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy',1100)}});item.append(name,code,desc,btn);list.append(item)}if(!matches.length){const e=document.createElement('div');e.className='empty';e.textContent='No matching syntax. Try the character itself, a code point (U+00A0), or a description.';list.append(e)}$('guide-count').textContent=matches.length+' entries';}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));document.querySelectorAll('[data-legal]').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.legal)));$('copyright-year').textContent=new Date().getFullYear();
-
-document.querySelectorAll('[data-layout]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.target;const vertical=b.dataset.layout==='vertical';$('workspace-'+t).classList.toggle('vertical',vertical);document.querySelectorAll('[data-layout][data-target="'+t+'"]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
-for(const t of ['docs','word']){for(const id of ['input-','digits-','space-'])$(id+t).addEventListener('input',()=>refresh(t));document.querySelector('[data-copy="'+t+'"]').addEventListener('click',()=>copyOutput(t));refresh(t)}
-
-// Aliases are SlickSyntax source instructions, not raw RE2 / Word expressions.
-// Word does not offer an equivalent of the ^ and $ line anchors, so only
-// paragraph markers are offered in its tray.
-const tokenDefs={
- ':start:':{docs:'^'},':end:':{docs:'$'},
- ':boundary:':{docs:'\\b'},':any:':{docs:'.',word:'?'},
- ':digits:':{docs:'\\d+',word:'[0-9]@'},
- ':wstart:':{word:'<'},':wend:':{word:'>'},
- ':para:':{word:'^13'},':break:':{docs:'\\n',word:'^l'}
-};
-const tokenCatalog={
- docs:[['Start of line',':start:','Beginning of a line, ^'],['End of line',':end:','End of a line, $'],['Word boundary',':boundary:','Position at edge of a word, \\b'],['Any character',':any:','Any single character, .'],['Any digits',':digits:','One or more digits, \\d+'],['Line break',':break:','Line feed, \\n']],
- word:[['Start of word',':wstart:','Beginning of a word, <'],['End of word',':wend:','End of a word, >'],['Paragraph mark',':para:','Paragraph mark, ^13; not a start/end-of-line anchor'],['Any character',':any:','Any single character, ?'],['Any digits',':digits:','One or more digits, [0-9]@'],['Manual break',':break:','Manual line break, ^l; not a paragraph mark']]
-};
-let lastInputSelection={docs:[0,0],word:[0,0]};
-function insertAt(el,text,target){
- const isInput=el.id==='input-'+target;
- const a=isInput?lastInputSelection[target][0]:el.selectionStart;
- const b=isInput?lastInputSelection[target][1]:el.selectionEnd;
- const start=Number.isInteger(a)?a:el.value.length;
- const end=Number.isInteger(b)?b:start;
- el.setRangeText(text,start,end,'end');
- el.dispatchEvent(new Event('input',{bubbles:true}));
- el.focus();
- if(isInput)lastInputSelection[target]=[el.selectionStart,el.selectionEnd];
-}
-for(const t of ['docs','word']){
- const input=$('input-'+t),output=$('out-'+t);
- const remember=()=>lastInputSelection[t]=[input.selectionStart,input.selectionEnd];
- ['click','keyup','select','focus','input'].forEach(ev=>input.addEventListener(ev,remember));
- for(const [label,alias,hint] of tokenCatalog[t]){
-  const btn=document.createElement('button');btn.type='button';btn.className='token-button';btn.draggable=true;
-  btn.title=hint+' — type '+alias+' or drag/click';btn.setAttribute('aria-label','Insert '+label+', '+alias);
-  const txt=document.createElement('span');txt.textContent=label;const code=document.createElement('code');code.textContent=alias;
-  btn.append(txt,code);btn.addEventListener('click',()=>insertAt(input,alias,t));
-  btn.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',alias);e.dataTransfer.setData('application/x-slicksyntax-token',alias);e.dataTransfer.effectAllowed='copy'});
-  $('tokens-'+t).append(btn);
- }
- for(const el of [input,output]){
-  el.addEventListener('dragover',e=>{if([...e.dataTransfer.types].includes('application/x-slicksyntax-token')){e.preventDefault();e.dataTransfer.dropEffect='copy';el.classList.add('drop-ready')}});
-  el.addEventListener('dragleave',()=>el.classList.remove('drop-ready'));
-  el.addEventListener('drop',e=>{el.classList.remove('drop-ready');const alias=e.dataTransfer.getData('application/x-slicksyntax-token');if(!alias||!tokenDefs[alias]?.[t])return;e.preventDefault();
-   // On output, insert the resulting target syntax, not its typed alias.
-   const value=el===output?tokenDefs[alias][t]:alias;
-   if(el===input){const p=lastInputSelection[t];el.setSelectionRange(p[0],p[1]);}
-   insertAt(el,value,t);
-  });
- }
-}
-
-document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>{state.guide=b.dataset.guide;document.querySelectorAll('[data-guide]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderGuide()}));$('guide-search').addEventListener('input',renderGuide);renderGuide();
-document.addEventListener('keydown',e=>{
- if(e.key==='Enter'&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&['docs','word'].includes(state.page)&&document.activeElement===$('out-'+state.page)){
-  e.preventDefault();copyOutput(state.page);return;
- }
- if(e.key==='Escape'&&state.page==='guide'&&document.activeElement===$('guide-search')){$('guide-search').value='';renderGuide()}
- if(e.altKey&&!e.ctrlKey&&!e.metaKey&&['1','2','3'].includes(e.key)){e.preventDefault();switchPage({1:'docs',2:'word',3:'guide'}[e.key])}
-});
-
-window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(['docs','word','guide','privacy','terms'].includes(p)&&p!==state.page)switchPage(p)});
-
-const themeToggle=document.getElementById('theme-toggle');
-const sunIcon='<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.5 1.5m9.8 9.8 1.5 1.5M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5"/><circle cx="12" cy="12" r="4"/></svg>';
-const moonIcon='<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z"/></svg>';
-function applyTheme(theme){const dark=theme==='dark';document.documentElement.dataset.theme=theme;themeToggle.innerHTML=dark?sunIcon:moonIcon;themeToggle.setAttribute('aria-pressed',String(dark));themeToggle.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');themeToggle.title=dark?'Switch to light mode':'Switch to dark mode';document.querySelector('meta[name="theme-color"]').content=dark?'#0b1220':'#f5f7fa';}
-let savedTheme;try{savedTheme=localStorage.getItem('slicksyntax-theme')}catch{}
-applyTheme(savedTheme==='light'||savedTheme==='dark'?savedTheme:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
-themeToggle.addEventListener('click',()=>{const next=document.documentElement.dataset.theme==='dark'?'light':'dark';applyTheme(next);try{localStorage.setItem('slicksyntax-theme',next)}catch{}});
-</script>
-</body></html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <meta content="#f5f7fa" name="theme-color"/>
+  <title>
+   SlickSyntax &mdash; Google Docs &amp; Word
+  </title>
+  <link href="styles.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <header>
+   <div class="bar">
+    <div class="brand">
+     SlickSyntax
+     <small>
+      Offline regex helper
+     </small>
+    </div>
+    <nav aria-label="Pages" class="tabs">
+     <button aria-selected="false" class="tab" data-page="guide">
+      Syntax guide
+     </button>
+    </nav>
+    <button aria-label="Switch to dark mode" aria-pressed="false" class="theme-toggle" id="theme-toggle" title="Switch to dark mode" type="button">
+     <svg aria-hidden="true" viewbox="0 0 24 24">
+      <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.5 1.5m9.8 9.8 1.5 1.5M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5">
+      </path>
+      <circle cx="12" cy="12" r="4">
+      </circle>
+     </svg>
+    </button>
+   </div>
+  </header>
+  <main class="app">
+   <section class="view" id="docs">
+    <p class="eyebrow">
+     Google Docs / RE2
+    </p>
+    <h1>
+     Turn text into a search pattern.
+    </h1>
+    <p class="intro">
+     Paste a sample. Letters, numbers, and spaces become flexible patterns. Wrap exact text in {...}.
+    </p>
+    <nav aria-label="Choose pattern target" class="target-tabs">
+     <button aria-selected="true" class="tab" data-page="docs" type="button">
+      Google Docs
+     </button>
+     <button aria-selected="false" class="tab" data-page="word" type="button">
+      Microsoft Word
+     </button>
+    </nav>
+    <div aria-label="Arrange editor panels" class="layout-switch" role="group">
+     <span class="layout-label">
+      Layout
+     </span>
+     <button aria-label="Place input and output side by side" aria-pressed="true" data-layout="horizontal" data-target="docs" title="Side by side" type="button">
+      <svg aria-hidden="true" viewbox="0 0 24 24">
+       <rect height="18" rx="2" width="20" x="2" y="3">
+       </rect>
+       <path d="M12 3v18">
+       </path>
+      </svg>
+     </button>
+     <button aria-label="Stack input above output" aria-pressed="false" data-layout="vertical" data-target="docs" title="Stack vertically" type="button">
+      <svg aria-hidden="true" viewbox="0 0 24 24">
+       <rect height="18" rx="2" width="20" x="2" y="3">
+       </rect>
+       <path d="M2 12h20">
+       </path>
+      </svg>
+     </button>
+    </div>
+    <div class="workspace" id="workspace-docs">
+     <section class="panel">
+      <div class="panel-head">
+       <h2>
+        Input
+       </h2>
+       <span class="hint">
+        Ctrl+V paste &middot; Enter newline
+       </span>
+      </div>
+      <label class="field-label" for="input-docs">
+       Sample text or {exact text}
+      </label>
+      <textarea aria-describedby="help-docs" class="input-box" id="input-docs" placeholder="Type or paste sample text&hellip;" spellcheck="false"></textarea>
+      <div class="options" id="opts-docs">
+       <label>
+        <input checked="" id="digits-docs" type="checkbox"/>
+        Any number
+       </label>
+       <label>
+        <input checked="" id="space-docs" type="checkbox"/>
+        Whitespace runs
+       </label>
+      </div>
+      <p class="subtle" id="help-docs">
+       <span class="key">
+        Enter
+       </span>
+       newline &middot;
+       <span class="key">
+        Ctrl+V
+       </span>
+       paste. Letters, numbers and whitespace become flexible patterns. Wrap exact text in {...}, for example {Invoice} 123.
+      </p>
+     </section>
+     <section class="panel">
+      <div class="panel-head">
+       <h2>
+        Output
+       </h2>
+       <span class="hint">
+        Shift+Enter copies
+       </span>
+      </div>
+      <label class="field-label" for="out-docs">
+       Generated search pattern
+      </label>
+      <textarea aria-label="Generated search pattern" class="output-box" id="out-docs" placeholder="Generated pattern appears here&hellip;" spellcheck="false"></textarea>
+      <button class="copy" data-copy="docs">
+       Copy output &middot; Shift+Enter
+      </button>
+      <p aria-live="polite" class="status" id="status-docs" role="status">
+      </p>
+      <div class="shortcuts">
+       <span>
+        <span class="key">
+         Shift+Enter
+        </span>
+        copy (output focused) &middot;
+        <span class="key">
+         Ctrl+C
+        </span>
+        copy selected text
+       </span>
+      </div>
+      <div class="note">
+       Google Docs: Ctrl+H &rarr; Match using regular expressions.
+      </div>
+     </section>
+    </div>
+    <section aria-label="Insert Google Docs pattern tokens" class="token-tray">
+     <div class="token-heading">
+      <h2>
+       Insert patterns
+      </h2>
+      <p>
+       Drag into an editor or click to insert at the input cursor.
+      </p>
+     </div>
+     <div class="token-row" id="tokens-docs">
+     </div>
+     <p class="subtle">
+      Quick type:
+      <span class="key">
+       :start:
+      </span>
+      ,
+      <span class="key">
+       :end:
+      </span>
+      (Docs), or
+      <span class="key">
+       :para:
+      </span>
+      (Word). Type
+      <span class="key">
+       {exact text}
+      </span>
+      to keep text literal. Hover or focus a token for a hint.
+     </p>
+    </section>
+   </section>
+   <section class="view" hidden="" id="word">
+    <p class="eyebrow">
+     Microsoft Word / Wildcards
+    </p>
+    <h1>
+     Build a Word search pattern.
+    </h1>
+    <p class="intro">
+     Paste sample text to generate Word wildcard search syntax. Letters become character patterns. Wrap exact text in {...}.
+    </p>
+    <nav aria-label="Choose pattern target" class="target-tabs">
+     <button aria-selected="true" class="tab" data-page="docs" type="button">
+      Google Docs
+     </button>
+     <button aria-selected="false" class="tab" data-page="word" type="button">
+      Microsoft Word
+     </button>
+    </nav>
+    <div aria-label="Arrange editor panels" class="layout-switch" role="group">
+     <span class="layout-label">
+      Layout
+     </span>
+     <button aria-label="Place input and output side by side" aria-pressed="true" data-layout="horizontal" data-target="word" title="Side by side" type="button">
+      <svg aria-hidden="true" viewbox="0 0 24 24">
+       <rect height="18" rx="2" width="20" x="2" y="3">
+       </rect>
+       <path d="M12 3v18">
+       </path>
+      </svg>
+     </button>
+     <button aria-label="Stack input above output" aria-pressed="false" data-layout="vertical" data-target="word" title="Stack vertically" type="button">
+      <svg aria-hidden="true" viewbox="0 0 24 24">
+       <rect height="18" rx="2" width="20" x="2" y="3">
+       </rect>
+       <path d="M2 12h20">
+       </path>
+      </svg>
+     </button>
+    </div>
+    <div class="workspace" id="workspace-word">
+     <section class="panel">
+      <div class="panel-head">
+       <h2>
+        Input
+       </h2>
+       <span class="hint">
+        Ctrl+V paste &middot; Enter newline
+       </span>
+      </div>
+      <label class="field-label" for="input-word">
+       Sample text or {exact text}
+      </label>
+      <textarea aria-describedby="help-word" class="input-box" id="input-word" placeholder="Type or paste sample text&hellip;" spellcheck="false"></textarea>
+      <div class="options" id="opts-word">
+       <label>
+        <input checked="" id="digits-word" type="checkbox"/>
+        Any number
+       </label>
+       <label>
+        <input checked="" id="space-word" type="checkbox"/>
+        Whitespace runs
+       </label>
+      </div>
+      <p class="subtle" id="help-word">
+       <span class="key">
+        Enter
+       </span>
+       newline &middot;
+       <span class="key">
+        Ctrl+V
+       </span>
+       paste. Letters, numbers and whitespace become flexible patterns. Wrap exact text in {...}, for example {Invoice} 123.
+      </p>
+     </section>
+     <section class="panel">
+      <div class="panel-head">
+       <h2>
+        Output
+       </h2>
+       <span class="hint">
+        Word advanced Find
+       </span>
+      </div>
+      <label class="field-label" for="out-word">
+       Generated search pattern
+      </label>
+      <textarea aria-label="Generated search pattern" class="output-box" id="out-word" placeholder="Generated pattern appears here&hellip;" spellcheck="false"></textarea>
+      <button class="copy" data-copy="word">
+       Copy output &middot; Shift+Enter
+      </button>
+      <p aria-live="polite" class="status" id="status-word" role="status">
+      </p>
+      <div class="shortcuts">
+       <span>
+        <span class="key">
+         Shift+Enter
+        </span>
+        copy (output focused) &middot;
+        <span class="key">
+         Ctrl+C
+        </span>
+        copy selected text
+       </span>
+      </div>
+      <div class="note">
+       Word: Advanced Find &rarr; More &rarr; Use wildcards.
+      </div>
+     </section>
+    </div>
+    <section aria-label="Insert Word pattern tokens" class="token-tray">
+     <div class="token-heading">
+      <h2>
+       Insert patterns
+      </h2>
+      <p>
+       Drag into an editor or click to insert at the input cursor.
+      </p>
+     </div>
+     <div class="token-row" id="tokens-word">
+     </div>
+     <p class="subtle">
+      Quick type:
+      <span class="key">
+       :start:
+      </span>
+      ,
+      <span class="key">
+       :end:
+      </span>
+      (Docs), or
+      <span class="key">
+       :para:
+      </span>
+      (Word). Type
+      <span class="key">
+       {exact text}
+      </span>
+      to keep text literal. Hover or focus a token for a hint.
+     </p>
+    </section>
+   </section>
+   <section class="view" hidden="" id="guide">
+    <div class="guide-top">
+     <div>
+      <p class="eyebrow">
+       Reference / Searchable
+      </p>
+      <h1>
+       Syntax guide.
+      </h1>
+      <p class="intro">
+       Search by a character you pasted, a token like
+       <code>
+        \d
+       </code>
+       , or a description like &ldquo;tab&rdquo;, &ldquo;digit&rdquo;, or &ldquo;non-breaking space&rdquo;.
+      </p>
+     </div>
+    </div>
+    <label class="field-label" for="guide-search">
+     Search syntax and characters
+    </label>
+    <input autocomplete="off" class="search" id="guide-search" placeholder="Try: 3, tab, U+00A0, [, number, \d, ^t" spellcheck="false" type="search"/>
+    <div class="guide-controls">
+     <div aria-label="Guide target" class="mode" role="group">
+      <button aria-pressed="true" data-guide="docs">
+       Google Docs
+      </button>
+      <button aria-pressed="false" data-guide="word">
+       Microsoft Word
+      </button>
+     </div>
+     <span id="guide-count">
+     </span>
+    </div>
+    <div aria-label="Searchable syntax reference" class="guide-list" id="guide-list">
+    </div>
+    <p class="source">
+     References:
+     <a href="https://support.google.com/docs/answer/62754" rel="noopener noreferrer" target="_blank">
+      Google Docs Find and Replace
+     </a>
+     &middot;
+     <a href="https://github.com/google/re2/wiki/syntax" rel="noopener noreferrer" target="_blank">
+      RE2 syntax
+     </a>
+     &middot;
+     <a href="https://support.microsoft.com/en-us/office/find-and-replace-text-c6728c16-469e-43cd-afe4-7708c6c779b7" rel="noopener noreferrer" target="_blank">
+      Word Find and Replace
+     </a>
+     . Some operations are context-dependent; Word wildcards are not a one-to-one mapping to RE2.
+    </p>
+   </section>
+   <section class="view legal-view" hidden="" id="privacy">
+    <p class="eyebrow">
+     Legal / Privacy
+    </p>
+    <h1>
+     Privacy Policy
+    </h1>
+    <p class="intro">
+     Last updated: October 29, 2026
+    </p>
+    <div class="panel legal-copy">
+     <h2>
+      Your text stays in your browser
+     </h2>
+     <p>
+      SlickSyntax processes text and patterns locally in your browser. We do not operate an account system or server that collects, stores, or receives your pasted text, generated expressions, or searches. We do not intentionally use analytics, advertising trackers, or cookies.
+     </p>
+     <h2>
+      Local preference
+     </h2>
+     <p>
+      Your selected appearance (light or dark) is saved in your browser's local storage under
+      <code>
+       slicksyntax-theme
+      </code>
+      . You can clear it using your browser's site-data controls. Text you type into the app is not saved in that local storage.
+     </p>
+     <h2>
+      Hosting and external links
+     </h2>
+     <p>
+      If this site is hosted on GitHub Pages or another provider, that provider may process connection information, including IP addresses and access logs, under its own policies. Opening external documentation links sends you to third-party websites with their own privacy practices.
+     </p>
+     <h2>
+      Changes
+     </h2>
+     <p>
+      This policy may be changed at any time. The date above identifies this version. We do not promise advance notice of revisions.
+     </p>
+     <p>
+      This is a plain-language description, not legal advice.
+     </p>
+    </div>
+   </section>
+   <section class="view legal-view" hidden="" id="terms">
+    <p class="eyebrow">
+     Legal / Terms
+    </p>
+    <h1>
+     Terms of Service
+    </h1>
+    <p class="intro">
+     Last updated: October 29, 2026
+    </p>
+    <div class="panel legal-copy">
+     <h2>
+      Use of SlickSyntax
+     </h2>
+     <p>
+      SlickSyntax is a free text and search-pattern utility. You are responsible for verifying generated expressions, their compatibility with the target application, and any changes you make using them.
+     </p>
+     <h2>
+      Provided as is
+     </h2>
+     <p>
+      The website and all its content are provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo;, without warranties of any kind to the extent permitted by applicable law. Patterns may not work in every version of Microsoft Word or Google Docs.
+     </p>
+     <h2>
+      Changes and availability
+     </h2>
+     <p>
+      The service, its features, these terms, and its availability may change or be discontinued at any time without prior notice.
+     </p>
+     <h2>
+      Limitation
+     </h2>
+     <p>
+      To the extent permitted by law, the site operator is not liable for damages or losses arising from use of the tool. Nothing here excludes rights or obligations that cannot legally be excluded.
+     </p>
+     <h2>
+      Not legal advice
+     </h2>
+     <p>
+      These terms and the privacy policy are informational drafts, not legal advice. They should be reviewed by a qualified professional before a public launch if legal compliance is important.
+     </p>
+    </div>
+   </section>
+  </main>
+  <footer class="site-footer">
+   <div class="footer-inner">
+    <span>
+     &copy;
+     <span id="copyright-year">
+      2026
+     </span>
+     SlickSyntax. All rights reserved.
+    </span>
+    <nav aria-label="Legal">
+     <button data-legal="privacy" type="button">
+      Privacy Policy
+     </button>
+     <button data-legal="terms" type="button">
+      Terms of Service
+     </button>
+    </nav>
+    <span>
+     Runs locally in your browser.
+    </span>
+   </div>
+  </footer>
+  <script defer="" src="script.js">
+  </script>
+ </body>
+</html>
