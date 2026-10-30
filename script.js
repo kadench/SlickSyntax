@@ -1,7 +1,14 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
-const state = { docs: {}, word: {}, guide: 'docs', page: 'docs' };
-const guide = [
+const TARGETS = ['docs', 'word', 'python'];
+const TARGET_LABELS = {
+  docs: 'Google Docs',
+  word: 'Microsoft Word',
+  python: 'Python re',
+};
+const state = { docs: {}, word: {}, python: {}, guide: 'docs', page: 'docs' };
+const privateSessions = { docs: false, word: false, python: false };
+const baseGuide = [
 ['Any digit','3 7 0123456789 number digit','\\d','[0-9]','Matches a single digit'],
 ['One or more digits','123 42 number digits numeric','\\d+','[0-9]@','Matches a run of digits'],
 ['Not a digit','abc nondigit','\\D','[!0-9]','Matches a non-digit character'],
@@ -48,64 +55,70 @@ const guide = [
 ['Lookbehind','(?<=) behind','Not supported','Not supported','Not supported in RE2 or Word wildcard search'],
 ['Match a group in replacement','$1 group replacement capture','$1','\\1','Replacement-field group reference, not a Find pattern']
 ];
-function escDocs(character) {
-  if (character === '\t') return '\\t';
-  if (character === '\n') return '\\n';
-  if (character === '\r') return '\\r';
-  if (character === '\u00a0') return '\\x{A0}';
-  return /[\\.^$|?*+()[\]{}]/.test(character)
-    ? '\\' + character
-    : character;
-}
-
-function escWord(character) {
-  if (character === '\t') return '^t';
-  if (character === '\n') return '^l';
-  if (character === '\r') return '^13';
-  if (character === '\u00a0') return '^s';
-  return /[\\?*()[\]{}@<>]/.test(character)
-    ? '\\' + character
-    : character;
-}
+const pythonGuidePatterns = {
+  'Any digit': '\\d',
+  'One or more digits': '\\d+',
+  'Not a digit': '\\D',
+  'Any letter': '[A-Za-z]',
+  'Any word character': '\\w',
+  'Not a word character': '\\W',
+  'Any whitespace': '\\s',
+  'One or more whitespace': '\\s+',
+  'Space': ' ',
+  'Tab': '\\t',
+  'Non-breaking space': '\\u00A0',
+  'Line feed': '\\n',
+  'Carriage return / paragraph': '\\r',
+  'Any character': '.',
+  'Zero or more': 'a*',
+  'One or more': 'a+',
+  'Optional': 'a?',
+  'Exactly N': 'a{3}',
+  'At least N': 'a{3,}',
+  'Between N and M': 'a{2,5}',
+  'Character set': '[abc]',
+  'Negated set': '[^abc]',
+  'Either / alternation': 'cat|dog',
+  'Grouping': '(abc)',
+  'Non-capturing group': '(?:abc)',
+  'Start of line': '^',
+  'End of line': '$',
+  'Word start boundary': '\\b',
+  'Word end boundary': '\\b',
+  'Literal period': '\\.',
+  'Literal asterisk': '\\*',
+  'Literal plus': '\\+',
+  'Literal question mark': '\\?',
+  'Literal opening parenthesis': '\\(',
+  'Literal closing parenthesis': '\\)',
+  'Literal square brackets': '\\[ \\]',
+  'Literal braces': '\\{ \\}',
+  'Literal backslash': '\\\\',
+  'Literal pipe': '\\|',
+  'Literal dollar': '\\$',
+  'Literal caret': '\\^',
+  'Case-insensitive flag': '(?i)',
+  'Lookahead': '(?=abc)',
+  'Lookbehind': '(?<=abc)',
+  'Match a group in replacement': '\\g<1>',
+};
+const guide = baseGuide.map((row) => [
+  row[0],
+  row[1],
+  row[2],
+  row[3],
+  pythonGuidePatterns[row[0]] || 'Not supported',
+  row[4],
+]);
 function generate(target){
- const sample=$('input-'+target).value;
- const digits=$('digits-'+target).checked;
- const space=$('space-'+target).checked;
- const esc=target==='docs'?escDocs:escWord;
- let out='';
- for(let i=0;i<sample.length;){
-  // {...} is the deliberately simple SlickSyntax escape hatch for exact text.
-  // An unclosed marker is treated as normal text, never discarded.
-  if(sample[i]==='{'){
-   const close=sample.indexOf('}',i+1);
-   if(close!==-1){out+=Array.from(sample.slice(i+1,close),esc).join('');i=close+1;continue;}
-  }
-  // Named tokens are processed before ordinary letters. Exact braces take priority.
-  const alias=Object.keys(tokenDefs).find(k=>sample.startsWith(k,i)&&tokenDefs[k][target]);
-  if(alias){out+=tokenDefs[alias][target];i+=alias.length;continue;}
-  const c=sample[i];
-  if(/[a-z]/.test(c)){
-   while(i<sample.length&&/[a-z]/.test(sample[i]))i++;
-   out+=target==='docs'?'[a-z]+':'[a-z]@';continue;
-  }
-  if(/[A-Z]/.test(c)){
-   while(i<sample.length&&/[A-Z]/.test(sample[i]))i++;
-   out+=target==='docs'?'[A-Z]+':'[A-Z]@';continue;
-  }
-  if(digits&&/[0-9]/.test(c)){
-   while(i<sample.length&&/[0-9]/.test(sample[i]))i++;
-   out+=target==='docs'?'\\d+':'[0-9]@';continue;
-  }
-  if(space&&/[ \t\u00a0]/.test(c)){
-   let part='';while(i<sample.length&&/[ \t\u00a0]/.test(sample[i]))part+=sample[i++];
-   if(target==='docs')out+='[ \\t\\x{A0}]+';
-   else if(/^ +$/.test(part))out+=' @';
-   else out+=Array.from(part,esc).join('');
-   continue;
-  }
-  out+=esc(c);i++;
- }
- return out;
+ return globalThis.SlickSyntaxPattern.generatePattern(
+  target,
+  $('input-'+target).value,
+  {
+   digits:$('digits-'+target).checked,
+   whitespace:$('space-'+target).checked,
+  },
+ );
 }
 function refresh(target) {
   $('out-' + target).value = generate(target);
@@ -159,7 +172,7 @@ function switchPage(page) {
 
   if (page === 'guide') {
     $('guide-search').focus();
-  } else if (page === 'docs' || page === 'word') {
+  } else if (TARGETS.includes(page)) {
     $('input-' + page).focus();
   } else {
     const heading = document.querySelector('#' + page + ' h1');
@@ -169,11 +182,11 @@ function switchPage(page) {
 }
 
 function renderGuide() {
-  const query = $('guide-search').value.toLowerCase();
+  const query = $('guide-search').value;
   const target = state.guide;
-  const matches = guide.filter((row) =>
-    row.join(' ').toLowerCase().includes(query),
-  );
+  const result = globalThis.SlickSyntaxGuideSearch.searchGuide(guide, query);
+  const matches = result.matches;
+  const displayRows = [...result.characterRows, ...matches];
   const list = $('guide-list');
 
   list.replaceChildren();
@@ -190,7 +203,7 @@ function renderGuide() {
   );
   list.append(header);
 
-  for (const row of matches) {
+  for (const row of displayRows) {
     const item = document.createElement('div');
     item.className = 'guide-row';
 
@@ -198,11 +211,11 @@ function renderGuide() {
     name.textContent = row[0];
 
     const code = document.createElement('code');
-    code.textContent = row[target === 'docs' ? 2 : 3];
+    code.textContent = row[{ docs: 2, word: 3, python: 4 }[target]];
 
     const description = document.createElement('div');
     description.className = 'desc';
-    description.textContent = row[4];
+    description.textContent = row[5];
 
     const copyButton = document.createElement('button');
     copyButton.className = 'mini';
@@ -225,15 +238,15 @@ function renderGuide() {
     list.append(item);
   }
 
-  if (!matches.length) {
+  if (!displayRows.length) {
     const empty = document.createElement('div');
     empty.className = 'empty';
-    empty.textContent =
-      'No matching syntax. Try the character itself, a code point (U+00A0), or a description.';
+    empty.textContent = globalThis.SlickSyntaxGuideSearch.formatNoResults(query);
     list.append(empty);
   }
 
-  $('guide-count').textContent = matches.length + ' entries';
+  $('guide-count').textContent =
+    displayRows.length + (displayRows.length === 1 ? ' entry' : ' entries');
 }
 
 document.querySelectorAll('.tab').forEach((button) => {
@@ -252,24 +265,43 @@ document.querySelectorAll('[data-legal]').forEach((button) => {
 
 $('copyright-year').textContent = new Date().getFullYear();
 
+const compactLayout = matchMedia('(max-width: 620px)');
+const layoutWasChosen = { docs: false, word: false, python: false };
+
+function applyLayout(target, vertical) {
+  $('workspace-' + target).classList.toggle('vertical', vertical);
+  document
+    .querySelectorAll('[data-layout][data-target="' + target + '"]')
+    .forEach((layoutButton) => {
+      layoutButton.setAttribute(
+        'aria-pressed',
+        String(layoutButton.dataset.layout === (vertical ? 'vertical' : 'horizontal')),
+      );
+      layoutButton.disabled = compactLayout.matches && layoutButton.dataset.layout === 'horizontal';
+    });
+}
+
+function applyResponsiveLayoutDefaults() {
+  for (const target of TARGETS) {
+    document
+      .querySelectorAll('[data-layout="horizontal"][data-target="' + target + '"]')
+      .forEach((button) => { button.disabled = compactLayout.matches; });
+    if (compactLayout.matches || !layoutWasChosen[target]) applyLayout(target, compactLayout.matches);
+  }
+}
+
 document.querySelectorAll('[data-layout]').forEach((button) => {
   button.addEventListener('click', () => {
     const target = button.dataset.target;
-    const vertical = button.dataset.layout === 'vertical';
-
-    $('workspace-' + target).classList.toggle('vertical', vertical);
-    document
-      .querySelectorAll('[data-layout][data-target="' + target + '"]')
-      .forEach((layoutButton) => {
-        layoutButton.setAttribute(
-          'aria-pressed',
-          String(layoutButton === button),
-        );
-      });
+    layoutWasChosen[target] = true;
+    applyLayout(target, button.dataset.layout === 'vertical');
   });
 });
 
-for (const target of ['docs', 'word']) {
+applyResponsiveLayoutDefaults();
+compactLayout.addEventListener('change', applyResponsiveLayoutDefaults);
+
+for (const target of TARGETS) {
   for (const idPrefix of ['input-', 'digits-', 'space-']) {
     $(idPrefix + target).addEventListener('input', () => refresh(target));
   }
@@ -281,20 +313,6 @@ for (const target of ['docs', 'word']) {
   refresh(target);
 }
 
-// Aliases are SlickSyntax source instructions, not raw RE2 / Word expressions.
-// Word does not offer an equivalent of the ^ and $ line anchors, so only
-// paragraph markers are offered in its tray.
-const tokenDefs = {
-  ':start:': { docs: '^' },
-  ':end:': { docs: '$' },
-  ':boundary:': { docs: '\\b' },
-  ':any:': { docs: '.', word: '?' },
-  ':digits:': { docs: '\\d+', word: '[0-9]@' },
-  ':wstart:': { word: '<' },
-  ':wend:': { word: '>' },
-  ':para:': { word: '^13' },
-  ':break:': { docs: '\\n', word: '^l' },
-};
 const tokenCatalog = {
   docs: [
     ['Start of line', ':start:', 'Beginning of a line, ^'],
@@ -316,8 +334,17 @@ const tokenCatalog = {
     ['Any digits', ':digits:', 'One or more digits, [0-9]@'],
     ['Manual break', ':break:', 'Manual line break, ^l; not a paragraph mark'],
   ],
+  python: [
+    ['Start of line', ':start:', 'Beginning of a line, ^'],
+    ['End of line', ':end:', 'End of a line, $'],
+    ['Word boundary', ':boundary:', 'Position at edge of a word, \\b'],
+    ['Any character', ':any:', 'Any single character, .'],
+    ['Any digits', ':digits:', 'One or more Unicode digits, \\d+'],
+    ['Line break', ':break:', 'Line feed, \\n'],
+  ],
 };
-let lastInputSelection={docs:[0,0],word:[0,0]};
+const tokenDefs = globalThis.SlickSyntaxPattern.tokenDefinitions;
+let lastInputSelection={docs:[0,0],word:[0,0],python:[0,0]};
 function insertAt(el,text,target){
  const isInput=el.id==='input-'+target;
  const a=isInput?lastInputSelection[target][0]:el.selectionStart;
@@ -329,10 +356,17 @@ function insertAt(el,text,target){
  el.focus();
  if(isInput)lastInputSelection[target]=[el.selectionStart,el.selectionEnd];
 }
-for(const t of ['docs','word']){
+for(const t of TARGETS){
  const input=$('input-'+t),output=$('out-'+t);
  const remember=()=>lastInputSelection[t]=[input.selectionStart,input.selectionEnd];
  ['click','keyup','select','focus','input'].forEach(ev=>input.addEventListener(ev,remember));
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab' && !event.shiftKey) {
+      event.preventDefault();
+      lastInputSelection[t] = [input.selectionStart, input.selectionEnd];
+      insertAt(input, '\t', t);
+    }
+  });
   for (const [label, alias, hint] of tokenCatalog[t]) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -397,28 +431,85 @@ document.querySelectorAll('[data-guide]').forEach((button) => {
   });
 });
 
-$('guide-search').addEventListener('input', renderGuide);
+const guideSearchInput = $('guide-search');
+guideSearchInput.addEventListener('input', renderGuide);
+guideSearchInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Tab' && !event.shiftKey) {
+    event.preventDefault();
+    guideSearchInput.setRangeText(
+      '\t',
+      guideSearchInput.selectionStart,
+      guideSearchInput.selectionEnd,
+      'end',
+    );
+    renderGuide();
+  }
+});
 renderGuide();
 
-document.addEventListener('keydown', (event) => {
+const unlockedIcon =
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 7.6-1.7"></path></svg>';
+const lockedIcon =
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>';
+
+function renderPrivateSession(target) {
+  const button = document.querySelector('[data-private-session="' + target + '"]');
+  const locked = privateSessions[target];
+  button.innerHTML = locked ? lockedIcon : unlockedIcon;
+  button.setAttribute('aria-pressed', String(locked));
+  button.setAttribute(
+    'aria-label',
+    locked
+      ? 'Private session locked. Shift+Enter will not save history'
+      : 'Private session unlocked. Shift+Enter saves to history',
+  );
+  button.title = locked
+    ? 'Private session on: Shift+Enter will not save history'
+    : 'Private session off: Shift+Enter saves to history';
+}
+
+document.querySelectorAll('[data-private-session]').forEach((button) => {
+  const target = button.dataset.privateSession;
+  renderPrivateSession(target);
+  button.addEventListener('click', () => {
+    privateSessions[target] = !privateSessions[target];
+    renderPrivateSession(target);
+    setToolbarStatus(
+      target,
+      privateSessions[target]
+        ? 'Private session locked. Shift+Enter will not add history.'
+        : 'Private session unlocked. Shift+Enter will add history.',
+    );
+  });
+});
+
+document.addEventListener('keydown', async (event) => {
  if(
   event.key==='Enter' &&
   event.shiftKey &&
+  !event.repeat &&
   !event.ctrlKey &&
   !event.metaKey &&
   !event.altKey &&
-  ['docs','word'].includes(state.page) &&
-  document.activeElement===$('out-'+state.page)
+  TARGETS.includes(state.page)
  ){
-  event.preventDefault();copyOutput(state.page);return;
+  event.preventDefault();
+  const target=state.page;
+  if(document.activeElement===$('out-'+target)) await copyOutput(target);
+  if(privateSessions[target]) {
+   setToolbarStatus(target,'Private session locked. Pattern was not added to history.');
+  } else {
+   saveCurrentPattern(target);
+  }
+  return;
  }
  if(event.key==='Escape'&&state.page==='guide'&&document.activeElement===$('guide-search')){
   $('guide-search').value='';
   renderGuide();
  }
- if(event.altKey&&!event.ctrlKey&&!event.metaKey&&['1','2','3'].includes(event.key)){
+ if(event.altKey&&!event.ctrlKey&&!event.metaKey&&['1','2','3','4'].includes(event.key)){
   event.preventDefault();
-  switchPage({1:'docs',2:'word',3:'guide'}[event.key]);
+  switchPage({1:'docs',2:'word',3:'python',4:'guide'}[event.key]);
  }
 });
 
@@ -465,4 +556,757 @@ themeToggle.addEventListener('click', () => {
     localStorage.setItem('slicksyntax-theme', next);
   } catch {}
 });
+
+const HISTORY_KEY = 'slicksyntax-history-v1';
+let savedPatterns = readSavedPatterns();
+let textExportTarget = 'docs';
+
+function readSavedPatterns() {
+  try {
+    const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistSavedPatterns(target) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(savedPatterns));
+    return true;
+  } catch {
+    $('toolbar-status-' + target).textContent =
+      'Browser storage is unavailable. Download a file to keep this pattern.';
+    return false;
+  }
+}
+
+function makeId() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function currentPattern(target) {
+  return {
+    id: makeId(),
+    title: $('title-' + target).value.trim() || 'Untitled pattern',
+    target,
+    input: $('input-' + target).value,
+    output: $('out-' + target).value,
+    options: {
+      digits: $('digits-' + target).checked,
+      whitespace: $('space-' + target).checked,
+    },
+    savedAt: new Date().toISOString(),
+  };
+}
+
+function setToolbarStatus(target, message) {
+  $('toolbar-status-' + target).textContent = message;
+}
+
+function saveCurrentPattern(target) {
+  const record = currentPattern(target);
+  savedPatterns.unshift(record);
+  savedPatterns = savedPatterns.slice(0, 100);
+  if (!persistSavedPatterns(target)) {
+    savedPatterns.shift();
+    return;
+  }
+  renderHistory();
+  setToolbarStatus(target, 'Saved “' + record.title + '” in this browser.');
+}
+
+function loadPattern(record) {
+  const target = TARGETS.includes(record.target) ? record.target : 'docs';
+  switchPage(target);
+  $('title-' + target).value = record.title || '';
+  $('input-' + target).value = record.input || '';
+  $('digits-' + target).checked = record.options?.digits !== false;
+  $('space-' + target).checked = record.options?.whitespace !== false;
+  refresh(target);
+  $('out-' + target).value = record.output || $('out-' + target).value;
+  setToolbarStatus(target, 'Loaded “' + (record.title || 'Untitled pattern') + '”.');
+}
+
+function renderHistory() {
+  for (const target of TARGETS) {
+    const records = savedPatterns.filter((record) => record.target === target);
+    const list = $('history-list-' + target);
+    list.replaceChildren();
+    $('history-count-' + target).textContent =
+      records.length + (records.length === 1 ? ' item' : ' items');
+
+    if (!records.length) {
+      const empty = document.createElement('p');
+      empty.className = 'history-empty';
+      empty.textContent = 'No saved patterns yet.';
+      list.append(empty);
+      continue;
+    }
+
+    for (const record of records) {
+      const item = document.createElement('article');
+      item.className = 'history-item';
+
+      const summary = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = record.title || 'Untitled pattern';
+      const meta = document.createElement('span');
+      meta.className = 'history-meta';
+      const savedDate = new Date(record.savedAt);
+      meta.textContent = Number.isNaN(savedDate.valueOf())
+        ? TARGET_LABELS[target]
+        : savedDate.toLocaleString();
+      const code = document.createElement('code');
+      code.textContent = record.output || '(empty output)';
+      summary.append(title, meta, code);
+
+      const actions = document.createElement('div');
+      actions.className = 'history-actions';
+      const loadButton = document.createElement('button');
+      loadButton.type = 'button';
+      loadButton.textContent = 'Load';
+      loadButton.addEventListener('click', () => loadPattern(record));
+      const copyButton = document.createElement('button');
+      copyButton.type = 'button';
+      copyButton.textContent = 'Copy';
+      copyButton.addEventListener('click', async () => {
+        const copied = await copyText(record.output || '');
+        setToolbarStatus(target, copied ? 'Saved regex copied.' : 'Clipboard blocked.');
+      });
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', () => {
+        if (!confirm('Delete “' + (record.title || 'Untitled pattern') + '” from this browser?')) return;
+        savedPatterns = savedPatterns.filter((itemRecord) => itemRecord.id !== record.id);
+        persistSavedPatterns(target);
+        renderHistory();
+        setToolbarStatus(target, 'Saved pattern deleted.');
+      });
+      actions.append(loadButton, copyButton, deleteButton);
+      item.append(summary, actions);
+      list.append(item);
+    }
+  }
+}
+
+function safeFilename(value) {
+  const cleaned = value.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-').trim();
+  return (cleaned || 'slicksyntax-pattern').slice(0, 80);
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function recordAsText(record) {
+  return [
+    'Title: ' + record.title,
+    'Target: ' + TARGET_LABELS[record.target],
+    'Saved: ' + record.savedAt,
+    '',
+    'Input:',
+    record.input,
+    '',
+    'Output regex:',
+    record.output,
+  ].join('\n');
+}
+
+function downloadText(target, includeHistory) {
+  const current = currentPattern(target);
+  const records = includeHistory ? [current, ...savedPatterns] : [current];
+  const text = records.map(recordAsText).join('\n\n' + '-'.repeat(60) + '\n\n');
+  downloadBlob(
+    new Blob([text], { type: 'text/plain;charset=utf-8' }),
+    safeFilename(current.title) + (includeHistory ? '-with-history' : '') + '.txt',
+  );
+  setToolbarStatus(target, includeHistory ? 'Current pattern and saved history downloaded.' : 'Current pattern downloaded.');
+}
+
+function makeExportPayload(target, includeHistory) {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    current: currentPattern(target),
+    history: includeHistory ? savedPatterns : [],
+  };
+}
+
+function downloadJson(target, includeHistory) {
+  const payload = makeExportPayload(target, includeHistory);
+  downloadBlob(
+    new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json;charset=utf-8',
+    }),
+    safeFilename(payload.current.title) +
+      (includeHistory ? '-with-browser-history' : '') +
+      '.json',
+  );
+  setToolbarStatus(
+    target,
+    includeHistory
+      ? 'JSON exported with browser history.'
+      : 'Current pattern exported as JSON.',
+  );
+}
+
+async function copyJsonExport(target, includeHistory) {
+  const copied = await copyText(
+    JSON.stringify(makeExportPayload(target, includeHistory), null, 2),
+  );
+  setToolbarStatus(
+    target,
+    copied ? 'JSON export copied to clipboard.' : 'Clipboard access was blocked.',
+  );
+}
+
+function normalizeImportedRecord(record) {
+  if (!record || typeof record !== 'object') return null;
+  return {
+    id: typeof record.id === 'string' && record.id ? record.id : makeId(),
+    title:
+      typeof record.title === 'string' && record.title.trim()
+        ? record.title.slice(0, 80)
+        : 'Untitled pattern',
+    target: TARGETS.includes(record.target) ? record.target : 'docs',
+    input: typeof record.input === 'string' ? record.input : '',
+    output: typeof record.output === 'string' ? record.output : '',
+    options: {
+      digits: record.options?.digits !== false,
+      whitespace: record.options?.whitespace !== false,
+    },
+    savedAt:
+      typeof record.savedAt === 'string' && !Number.isNaN(Date.parse(record.savedAt))
+        ? record.savedAt
+        : new Date().toISOString(),
+  };
+}
+
+async function importJsonFile(file) {
+  const payload = JSON.parse(await file.text());
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Invalid SlickSyntax export');
+  }
+  const importedHistory = Array.isArray(payload.history)
+    ? payload.history.map(normalizeImportedRecord).filter(Boolean)
+    : [];
+  const importedCurrent = normalizeImportedRecord(payload.current);
+  if (!importedCurrent && !importedHistory.length) {
+    throw new Error('No SlickSyntax records found');
+  }
+
+  const seen = new Set();
+  savedPatterns = [...importedHistory, ...savedPatterns]
+    .filter((record) => {
+      if (seen.has(record.id)) return false;
+      seen.add(record.id);
+      return true;
+    })
+    .slice(0, 100);
+  const target = importedCurrent?.target || textExportTarget;
+  if (!persistSavedPatterns(target)) throw new Error('Browser storage unavailable');
+  renderHistory();
+  if (importedCurrent) loadPattern(importedCurrent);
+  setToolbarStatus(
+    target,
+    'Imported ' + importedHistory.length +
+      (importedHistory.length === 1 ? ' saved pattern.' : ' saved patterns.'),
+  );
+}
+
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function zipDateParts(date) {
+  return {
+    time: (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1),
+    date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+  };
+}
+
+function createZip(files) {
+  const encoder = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  const now = zipDateParts(new Date());
+  let offset = 0;
+
+  for (const file of files) {
+    const name = encoder.encode(file.name);
+    const data = typeof file.data === 'string' ? encoder.encode(file.data) : file.data;
+    const checksum = crc32(data);
+    const local = new Uint8Array(30 + name.length);
+    const localView = new DataView(local.buffer);
+    localView.setUint32(0, 0x04034b50, true);
+    localView.setUint16(4, 20, true);
+    localView.setUint16(6, 0x0800, true);
+    localView.setUint16(8, 0, true);
+    localView.setUint16(10, now.time, true);
+    localView.setUint16(12, now.date, true);
+    localView.setUint32(14, checksum, true);
+    localView.setUint32(18, data.length, true);
+    localView.setUint32(22, data.length, true);
+    localView.setUint16(26, name.length, true);
+    local.set(name, 30);
+    localParts.push(local, data);
+
+    const central = new Uint8Array(46 + name.length);
+    const centralView = new DataView(central.buffer);
+    centralView.setUint32(0, 0x02014b50, true);
+    centralView.setUint16(4, 20, true);
+    centralView.setUint16(6, 20, true);
+    centralView.setUint16(8, 0x0800, true);
+    centralView.setUint16(10, 0, true);
+    centralView.setUint16(12, now.time, true);
+    centralView.setUint16(14, now.date, true);
+    centralView.setUint32(16, checksum, true);
+    centralView.setUint32(20, data.length, true);
+    centralView.setUint32(24, data.length, true);
+    centralView.setUint16(28, name.length, true);
+    centralView.setUint32(42, offset, true);
+    central.set(name, 46);
+    centralParts.push(central);
+    offset += local.length + data.length;
+  }
+
+  const centralSize = centralParts.reduce((total, part) => total + part.length, 0);
+  const end = new Uint8Array(22);
+  const endView = new DataView(end.buffer);
+  endView.setUint32(0, 0x06054b50, true);
+  endView.setUint16(8, files.length, true);
+  endView.setUint16(10, files.length, true);
+  endView.setUint32(12, centralSize, true);
+  endView.setUint32(16, offset, true);
+  return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
+}
+
+function offlineRuntime(initialData) {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const TARGETS = ['docs', 'word', 'python'];
+  const KEY = 'slicksyntax-offline-history-v1';
+  let records = [];
+  let privateSession = false;
+  try {
+    const local = JSON.parse(localStorage.getItem(KEY) || '[]');
+    if (Array.isArray(local)) records = local;
+  } catch {}
+  if (!records.length && Array.isArray(initialData.history)) records = initialData.history;
+
+  function status(message) { $('status').textContent = message; }
+  function saveLocal() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(records));
+      return true;
+    } catch {
+      status('Local storage is unavailable. Export JSON to keep your work.');
+      return false;
+    }
+  }
+  function id() {
+    return globalThis.crypto && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+  function escDocs(character) {
+    if (character === '\t') return '\\t';
+    if (character === '\n') return '\\n';
+    if (character === '\r') return '\\r';
+    if (character === '\u00a0') return '\\x{A0}';
+    return /[\\.^$|?*+()[\]{}]/.test(character) ? '\\' + character : character;
+  }
+  function escWord(character) {
+    if (character === '\t') return '^t';
+    if (character === '\n') return '^l';
+    if (character === '\r') return '^13';
+    if (character === '\u00a0') return '^s';
+    return /[\\?*()[\]{}@<>]/.test(character) ? '\\' + character : character;
+  }
+  function escPython(character) {
+    if (character === '\0') return '\\x00';
+    if (character === '\t') return '\\t';
+    if (character === '\n') return '\\n';
+    if (character === '\r') return '\\r';
+    if (character === '\u00a0') return '\\u00A0';
+    const codePoint = character.codePointAt(0);
+    if (codePoint >= 0xd800 && codePoint <= 0xdfff) return '\\u' + codePoint.toString(16).toUpperCase().padStart(4, '0');
+    if (codePoint < 0x20 || codePoint === 0x7f) return '\\x' + codePoint.toString(16).toUpperCase().padStart(2, '0');
+    return /[\\.^$|?*+()[\]{}]/.test(character) ? '\\' + character : character;
+  }
+  function generate() {
+    const target = $('target').value;
+    const sample = $('input').value;
+    const digits = $('digits').checked;
+    const whitespace = $('whitespace').checked;
+    const esc = target === 'docs' ? escDocs : target === 'word' ? escWord : escPython;
+    const tokens = {
+      ':start:': { docs: '^', python: '^' },
+      ':end:': { docs: '$', python: '$' },
+      ':boundary:': { docs: '\\b', python: '\\b' },
+      ':any:': { docs: '.', word: '?', python: '.' },
+      ':digits:': { docs: '\\d+', word: '[0-9]@', python: '\\d+' },
+      ':wstart:': { word: '<' },
+      ':wend:': { word: '>' },
+      ':para:': { word: '^13' },
+      ':break:': { docs: '\\n', word: '^l', python: '\\n' },
+    };
+    const aliases = Object.keys(tokens).sort((a, b) => b.length - a.length);
+    let output = '';
+    for (let index = 0; index < sample.length;) {
+      if (sample[index] === '{') {
+        const close = sample.indexOf('}', index + 1);
+        if (close !== -1) {
+          output += Array.from(sample.slice(index + 1, close), esc).join('');
+          index = close + 1;
+          continue;
+        }
+      }
+      const alias = aliases.find((candidate) => sample.startsWith(candidate, index) && tokens[candidate][target]);
+      if (alias) {
+        output += tokens[alias][target];
+        index += alias.length;
+        continue;
+      }
+      const character = String.fromCodePoint(sample.codePointAt(index));
+      if (character === '?') {
+        output += target === 'word' ? '?' : '.';
+        index += character.length;
+        continue;
+      }
+      if (/[a-z]/.test(character)) {
+        while (index < sample.length && /[a-z]/.test(sample[index])) index += 1;
+        output += target === 'word' ? '[a-z]@' : '[a-z]+';
+        continue;
+      }
+      if (/[A-Z]/.test(character)) {
+        while (index < sample.length && /[A-Z]/.test(sample[index])) index += 1;
+        output += target === 'word' ? '[A-Z]@' : '[A-Z]+';
+        continue;
+      }
+      if (digits && /[0-9]/.test(character)) {
+        while (index < sample.length && /[0-9]/.test(sample[index])) index += 1;
+        output += target === 'word' ? '[0-9]@' : '\\d+';
+        continue;
+      }
+      if (whitespace && /[ \t\u00a0]/.test(character)) {
+        let part = '';
+        while (index < sample.length && /[ \t\u00a0]/.test(sample[index])) part += sample[index++];
+        if (target === 'docs') output += '[ \\t\\x{A0}]+';
+        else if (target === 'python') output += '[ \\t\\u00A0]+';
+        else if (/^ +$/.test(part)) output += ' @';
+        else output += Array.from(part, esc).join('');
+        continue;
+      }
+      output += esc(character);
+      index += character.length;
+    }
+    $('output').value = output;
+  }
+  function current() {
+    return {
+      id: id(),
+      title: $('title').value.trim() || 'Untitled pattern',
+      target: $('target').value,
+      input: $('input').value,
+      output: $('output').value,
+      options: { digits: $('digits').checked, whitespace: $('whitespace').checked },
+      savedAt: new Date().toISOString(),
+    };
+  }
+  function saveCurrent() {
+    const record = current();
+    records.unshift(record);
+    records = records.slice(0, 100);
+    if (saveLocal()) status('Saved “' + record.title + '” locally.');
+    render();
+  }
+  function renderPrivateSession() {
+    $('private').textContent = privateSession ? '🔒' : '🔓';
+    $('private').setAttribute('aria-pressed', String(privateSession));
+    $('private').setAttribute(
+      'aria-label',
+      privateSession
+        ? 'Private session locked. Shift+Enter will not save history'
+        : 'Private session unlocked. Shift+Enter saves to history',
+    );
+    $('private').title = privateSession
+      ? 'Private session on: Shift+Enter will not save history'
+      : 'Private session off: Shift+Enter saves to history';
+  }
+  async function copy(value) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      $('output').focus();
+      $('output').select();
+      try { return document.execCommand('copy'); } catch { return false; }
+    }
+  }
+  function load(record) {
+    $('title').value = record.title || '';
+    $('target').value = TARGETS.includes(record.target) ? record.target : 'docs';
+    $('input').value = record.input || '';
+    $('digits').checked = record.options?.digits !== false;
+    $('whitespace').checked = record.options?.whitespace !== false;
+    generate();
+    $('output').value = record.output || $('output').value;
+    status('Loaded “' + (record.title || 'Untitled pattern') + '”.');
+  }
+  function render() {
+    const list = $('history');
+    list.replaceChildren();
+    $('count').textContent = records.length + (records.length === 1 ? ' item' : ' items');
+    if (!records.length) {
+      const empty = document.createElement('p');
+      empty.className = 'empty';
+      empty.textContent = 'No local history yet.';
+      list.append(empty);
+      return;
+    }
+    records.forEach((record) => {
+      const item = document.createElement('article');
+      const info = document.createElement('div');
+      const name = document.createElement('strong');
+      name.textContent = record.title || 'Untitled pattern';
+      const code = document.createElement('code');
+      code.textContent = record.output || '(empty output)';
+      info.append(name, code);
+      const actions = document.createElement('div');
+      ['Load', 'Copy', 'Delete'].forEach((label) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = label;
+        if (label === 'Load') button.addEventListener('click', () => load(record));
+        if (label === 'Copy') button.addEventListener('click', async () => status(await copy(record.output || '') ? 'Copied.' : 'Clipboard blocked.'));
+        if (label === 'Delete') button.addEventListener('click', () => {
+          if (!confirm('Delete “' + (record.title || 'Untitled pattern') + '”?')) return;
+          records = records.filter((entry) => entry.id !== record.id);
+          saveLocal();
+          render();
+        });
+        actions.append(button);
+      });
+      item.append(info, actions);
+      list.append(item);
+    });
+  }
+  function download(data, filename, type) {
+    const url = URL.createObjectURL(new Blob([data], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  ['input', 'target', 'digits', 'whitespace'].forEach((name) => $(name).addEventListener('input', generate));
+  $('input').addEventListener('keydown', (event) => {
+    if (event.key === 'Tab' && !event.shiftKey) {
+      event.preventDefault();
+      $('input').setRangeText('\t', $('input').selectionStart, $('input').selectionEnd, 'end');
+      generate();
+    }
+  });
+  document.addEventListener('keydown', async (event) => {
+    if (event.key !== 'Enter' || !event.shiftKey || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+    event.preventDefault();
+    if (document.activeElement === $('output')) await copy($('output').value);
+    if (privateSession) status('Private session locked. Pattern was not added to history.');
+    else saveCurrent();
+  });
+  $('private').addEventListener('click', () => {
+    privateSession = !privateSession;
+    renderPrivateSession();
+    status(privateSession ? 'Private session locked.' : 'Private session unlocked.');
+  });
+  $('copy').addEventListener('click', async () => status(await copy($('output').value) ? 'Regex copied.' : 'Clipboard blocked.'));
+  $('paste').addEventListener('click', async () => {
+    try {
+      $('input').value = await navigator.clipboard.readText();
+      generate();
+      status('Clipboard pasted into input.');
+    } catch {
+      $('input').focus();
+      status('Clipboard access was blocked. Press Ctrl+V in the input box.');
+    }
+  });
+  $('save').addEventListener('click', saveCurrent);
+  $('export-json').addEventListener('click', () => {
+    const payload = { version: 1, exportedAt: new Date().toISOString(), current: current(), history: records };
+    download(JSON.stringify(payload, null, 2), 'slicksyntax-data.json', 'application/json');
+    status('JSON backup downloaded.');
+  });
+  $('export-text').addEventListener('click', () => {
+    const record = current();
+    download('Title: ' + record.title + '\nTarget: ' + record.target + '\n\nInput:\n' + record.input + '\n\nOutput regex:\n' + record.output, 'slicksyntax-pattern.txt', 'text/plain');
+  });
+  $('import-json').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const payload = JSON.parse(await file.text());
+      if (!Array.isArray(payload.history)) throw new Error('Invalid history');
+      records = payload.history;
+      saveLocal();
+      if (payload.current) load(payload.current);
+      render();
+      status('JSON data imported.');
+    } catch {
+      status('That file is not a valid SlickSyntax JSON export.');
+    }
+    event.target.value = '';
+  });
+  if (initialData.current) load(initialData.current);
+  renderPrivateSession();
+  saveLocal();
+  render();
+}
+
+function createOfflineHtml(snapshot) {
+  const data = JSON.stringify(snapshot).replace(/</g, '\\u003c');
+  const runtime = offlineRuntime.toString().replace(/<\/script/gi, '<\\/script');
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SlickSyntax Offline</title><style>
+:root{color-scheme:light dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0b1220;color:#f6f9ff}*{box-sizing:border-box}body{margin:0;background:#0b1220;color:#f6f9ff}header{border-bottom:1px solid #667e9a;background:#131e30}.bar,main{max-width:1050px;margin:auto;padding:18px 22px}.brand{font-size:21px;font-weight:800}.brand small{font-size:12px;font-weight:500;color:#d4dfea;margin-left:8px}main{padding-top:30px}.intro,.muted,.empty{color:#d4dfea}.toolbar{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;margin:20px 0 12px}.editor{display:grid;grid-template-columns:1fr 1fr;gap:16px}.panel,.history{background:#131e30;border:1px solid #667e9a;border-radius:14px;padding:18px}.field{display:grid;gap:6px;font-size:13px;font-weight:700}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;border:1px solid #9eafc4;border-radius:9px;background:#0b1220;color:#f6f9ff;padding:11px}textarea{height:280px;resize:vertical;font:14px/1.55 ui-monospace,Consolas,monospace}.options,.actions,.history-head,.history article{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.options{margin-top:12px}.options label{display:flex;gap:7px;align-items:center}.options input{width:auto}.actions{justify-content:flex-end}.actions button,.file-button,.history button{border:1px solid #9eafc4;border-radius:8px;background:#1e2d43;color:#f6f9ff;padding:9px 12px;cursor:pointer}.primary{background:#bdd5ff!important;color:#101b2c!important;font-weight:750}.status{min-height:20px;color:#d4dfea}.history{margin-top:16px}.history-head{justify-content:space-between}.history-head h2{font-size:17px;margin:0}.history-list{display:grid;gap:8px;margin-top:12px}.history article{justify-content:space-between;background:#1e2d43;border-radius:9px;padding:10px}.history article>div:first-child{min-width:0;flex:1}.history strong,.history code{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history code{margin-top:5px;color:#d4dfea}.warning{margin-top:16px;border:1px solid #ffd76e;border-radius:10px;padding:12px;color:#fff2bd}.file-button input{position:absolute;opacity:0;pointer-events:none}@media(max-width:720px){.toolbar,.editor{grid-template-columns:1fr}.actions{justify-content:flex-start}textarea{height:220px}}
+</style></head><body><header><div class="bar"><div class="brand">SlickSyntax <small>Offline regex helper</small></div></div></header>
+<main><h1>Regex Builder</h1><p class="intro">Build, copy, and save Google Docs, Microsoft Word, or Python re search patterns entirely on this device.</p>
+<div class="toolbar"><label class="field">Title<input id="title" maxlength="80" placeholder="Untitled pattern"></label><label class="field">Target<select id="target"><option value="docs">Google Docs</option><option value="word">Microsoft Word</option><option value="python">Python re</option></select></label><div class="actions"><button id="private" aria-pressed="false" title="Private session off"></button><button id="save" class="primary">Save locally</button><button id="export-text">Download text</button><button id="export-json">Export JSON</button><label class="file-button">Import JSON<input id="import-json" type="file" accept="application/json"></label></div></div>
+<div class="editor"><section class="panel"><h2>Input</h2><textarea id="input" placeholder="Type or paste sample text…"></textarea><div class="options"><label><input id="digits" type="checkbox" checked> Any number</label><label><input id="whitespace" type="checkbox" checked> Whitespace runs</label><button id="paste">Paste</button></div><p class="muted">? means any one character. Use {?} for a literal question mark.</p></section><section class="panel"><h2>Output regex</h2><textarea id="output" placeholder="Generated pattern appears here…"></textarea><div class="actions"><button id="copy" class="primary">Copy output</button></div></section></div>
+<p id="status" class="status" role="status" aria-live="polite"></p><section class="history"><div class="history-head"><h2>Local history</h2><span id="count">0 items</span></div><div id="history" class="history-list"></div></section>
+<p class="warning"><strong>Keep slicksyntax-data.json safe.</strong> It is the portable backup of your saved patterns. If you delete it and clear this browser’s local data, the saved history cannot be recovered.</p></main>
+<script>(${runtime})(${data});<\/script></body></html>`;
+}
+
+function downloadOfflinePackage(target) {
+  const snapshot = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    current: currentPattern(target),
+    history: savedPatterns,
+  };
+  const json = JSON.stringify(snapshot, null, 2);
+  const readme = [
+    'SlickSyntax Offline',
+    '===================',
+    '',
+    'Open slicksyntax-offline.html in a modern browser. It runs without a server or internet connection.',
+    '',
+    'Keep slicksyntax-data.json safe. It is the portable backup of your saved patterns.',
+    'If you delete the JSON file and clear the browser data used by the offline HTML file, your saved history cannot be recovered.',
+    '',
+    'Use Import JSON in the offline app to restore or move the saved data.',
+  ].join('\n');
+  const zip = createZip([
+    { name: 'slicksyntax-offline.html', data: createOfflineHtml(snapshot) },
+    { name: 'slicksyntax-data.json', data: json },
+    { name: 'README.txt', data: readme },
+  ]);
+  downloadBlob(zip, 'slicksyntax-offline.zip');
+  setToolbarStatus(target, 'Offline ZIP downloaded with HTML, JSON, and recovery instructions.');
+}
+
+document.querySelectorAll('[data-save]').forEach((button) => {
+  button.addEventListener('click', () => saveCurrentPattern(button.dataset.save));
+});
+
+document.querySelectorAll('[data-open-export]').forEach((button) => {
+  button.addEventListener('click', () => {
+    textExportTarget = button.dataset.openExport;
+    $('include-browser-history').checked = false;
+    if ($('export-dialog').showModal) $('export-dialog').showModal();
+    else downloadJson(textExportTarget, false);
+  });
+});
+
+document.querySelectorAll('[data-export-offline]').forEach((button) => {
+  button.addEventListener('click', () => downloadOfflinePackage(button.dataset.exportOffline));
+});
+
+document.querySelectorAll('[data-export-format]').forEach((button) => {
+  button.addEventListener('click', async () => {
+    const includeHistory = $('include-browser-history').checked;
+    if (button.dataset.exportFormat === 'json') {
+      downloadJson(textExportTarget, includeHistory);
+    } else if (button.dataset.exportFormat === 'txt') {
+      downloadText(textExportTarget, includeHistory);
+    } else {
+      await copyJsonExport(textExportTarget, includeHistory);
+    }
+    $('export-dialog').close();
+  });
+});
+
+$('import-json').addEventListener('change', async (event) => {
+  const [file] = event.target.files;
+  if (!file) return;
+  try {
+    await importJsonFile(file);
+    $('export-dialog').close();
+  } catch {
+    setToolbarStatus(
+      textExportTarget,
+      'That file is not a valid SlickSyntax JSON export.',
+    );
+  }
+  event.target.value = '';
+});
+
+function arrangeEditorShells() {
+for (const target of TARGETS) {
+    const workspace = $('workspace-' + target);
+    const tokenTray = $('tokens-' + target).closest('.token-tray');
+    const historyPanel = $('history-list-' + target).closest('.history-panel');
+    const shell = document.createElement('div');
+    shell.className = 'editor-shell history-collapsed';
+
+    const sidebar = document.createElement('aside');
+    sidebar.className = 'history-sidebar';
+    sidebar.setAttribute('aria-label', 'Local regex history');
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'history-toggle';
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Expand local history');
+    toggle.innerHTML =
+      '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"></path><path class="drawer-arrow" d="m8 9-3 3 3 3"></path></svg><span>History</span>';
+    toggle.addEventListener('click', () => {
+      const collapsed = shell.classList.toggle('history-collapsed');
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute(
+        'aria-label',
+        collapsed ? 'Expand local history' : 'Collapse local history',
+      );
+    });
+
+    const main = document.createElement('div');
+    main.className = 'editor-main';
+    workspace.before(shell);
+    sidebar.append(toggle, historyPanel);
+    main.append(workspace, tokenTray);
+    shell.append(sidebar, main);
+  }
+}
+
+arrangeEditorShells();
+renderHistory();
 

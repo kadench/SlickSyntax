@@ -5,19 +5,19 @@
   <meta content="width=device-width, initial-scale=1" name="viewport"/>
   <meta content="#f5f7fa" name="theme-color"/>
   <title>
-   SlickSyntax &mdash; Google Docs &amp; Word
+   SlickSyntax &mdash; Google Docs, Word &amp; Python
   </title>
   <link href="styles.css" rel="stylesheet"/>
  </head>
  <body>
   <header>
    <div class="bar">
-    <div class="brand">
+    <a aria-label="SlickSyntax home" class="brand" href="./">
      SlickSyntax
      <small>
       Offline regex helper
      </small>
-    </div>
+    </a>
     <nav aria-label="Pages" class="tabs">
      <button aria-selected="false" class="tab" data-page="guide">
       Syntax guide
@@ -39,7 +39,7 @@
      Google Docs / RE2
     </p>
     <h1>
-     Turn text into a search pattern.
+    Google Docs Regex Builder
     </h1>
     <p class="intro">
      Paste a sample. Letters, numbers, and spaces become flexible patterns. Wrap exact text in {...}.
@@ -50,6 +50,9 @@
      </button>
      <button aria-selected="false" class="tab" data-page="word" type="button">
       Microsoft Word
+     </button>
+     <button aria-selected="false" class="tab" data-page="python" type="button">
+      Python re
      </button>
     </nav>
     <div aria-label="Arrange editor panels" class="layout-switch" role="group">
@@ -73,6 +76,30 @@
       </svg>
      </button>
     </div>
+    <div class="workspace-toolbar">
+     <div class="title-controls">
+      <button aria-label="Private session unlocked. Shift+Enter saves to history" aria-pressed="false" class="private-toggle" data-private-session="docs" title="Private session off: Shift+Enter saves to history" type="button"></button>
+      <label class="pattern-title" for="title-docs">
+       Title
+       <input id="title-docs" maxlength="80" placeholder="Untitled pattern" type="text"/>
+      </label>
+     </div>
+     <div aria-label="Save and export" class="workspace-actions">
+      <button aria-label="Save this pattern in this browser" class="icon-action" data-save="docs" title="Save To Browser" type="button">
+       <svg aria-hidden="true" viewbox="0 0 24 24"><rect height="17" rx="2" width="20" x="2" y="3"></rect><path d="M2 8h20M12 11v6m0 0 3-3m-3 3-3-3"></path></svg>
+       <span>Save To Browser</span>
+      </button>
+      <button aria-label="Open export options" class="icon-action" data-open-export="docs" title="Export To" type="button">
+       <svg aria-hidden="true" viewbox="0 0 24 24"><path d="M6 2h8l4 4v16H6zM14 2v5h5M9 10h3M9 13h2M14 11v7m0 0 3-3m-3 3-3-3"></path></svg>
+       <span>Export To</span>
+      </button>
+      <button aria-label="Download this site for offline use" class="icon-action" data-export-offline="docs" title="Use Site Offline" type="button">
+       <svg aria-hidden="true" viewbox="0 0 24 24"><rect height="12" rx="2" width="18" x="3" y="3"></rect><path d="M1 19h22M12 6v7m0 0 3-3m-3 3-3-3"></path></svg>
+       <span>Use Site Offline</span>
+      </button>
+     </div>
+     <p aria-live="polite" class="toolbar-status" id="toolbar-status-docs" role="status"></p>
+    </div>
     <div class="workspace" id="workspace-docs">
      <section class="panel">
       <div class="panel-head">
@@ -88,11 +115,11 @@
       </label>
       <textarea aria-describedby="help-docs" class="input-box" id="input-docs" placeholder="Type or paste sample text&hellip;" spellcheck="false"></textarea>
       <div class="options" id="opts-docs">
-       <label>
+       <label title="Treat runs of digits as one flexible number pattern.">
         <input checked="" id="digits-docs" type="checkbox"/>
         Any number
        </label>
-       <label>
+       <label title="Treat consecutive spaces and tabs as one flexible whitespace pattern.">
         <input checked="" id="space-docs" type="checkbox"/>
         Whitespace runs
        </label>
@@ -105,7 +132,7 @@
        <span class="key">
         Ctrl+V
        </span>
-       paste. Letters, numbers and whitespace become flexible patterns. Wrap exact text in {...}, for example {Invoice} 123.
+       paste. Letters, numbers and whitespace become flexible patterns. A ? means any one character; use {?} for a literal question mark. Wrap other exact text in {...}, for example {Invoice} 123.
       </p>
      </section>
      <section class="panel">
@@ -114,7 +141,7 @@
         Output
        </h2>
        <span class="hint">
-        Shift+Enter copies
+        Shift+Enter saves
        </span>
       </div>
       <label class="field-label" for="out-docs">
@@ -122,7 +149,7 @@
       </label>
       <textarea aria-label="Generated search pattern" class="output-box" id="out-docs" placeholder="Generated pattern appears here&hellip;" spellcheck="false"></textarea>
       <button class="copy" data-copy="docs">
-       Copy output &middot; Shift+Enter
+       Copy output
       </button>
       <p aria-live="polite" class="status" id="status-docs" role="status">
       </p>
@@ -131,7 +158,7 @@
         <span class="key">
          Shift+Enter
         </span>
-        copy (output focused) &middot;
+        save to history (and copy when output is focused) &middot;
         <span class="key">
          Ctrl+C
         </span>
@@ -174,13 +201,21 @@
       to keep text literal. Hover or focus a token for a hint.
      </p>
     </section>
+    <section aria-labelledby="history-heading-docs" class="history-panel">
+     <div class="history-heading">
+      <h2 id="history-heading-docs">Local history</h2>
+      <span id="history-count-docs">0 items</span>
+     </div>
+     <p class="history-note">Saved regex stays in this browser.</p>
+     <div class="history-list" id="history-list-docs"></div>
+    </section>
    </section>
    <section class="view" hidden="" id="word">
     <p class="eyebrow">
      Microsoft Word / Wildcards
     </p>
     <h1>
-     Build a Word search pattern.
+    Word Regex Builder
     </h1>
     <p class="intro">
      Paste sample text to generate Word wildcard search syntax. Letters become character patterns. Wrap exact text in {...}.
@@ -191,6 +226,9 @@
      </button>
      <button aria-selected="false" class="tab" data-page="word" type="button">
       Microsoft Word
+     </button>
+     <button aria-selected="false" class="tab" data-page="python" type="button">
+      Python re
      </button>
     </nav>
     <div aria-label="Arrange editor panels" class="layout-switch" role="group">
@@ -214,6 +252,30 @@
       </svg>
      </button>
     </div>
+    <div class="workspace-toolbar">
+     <div class="title-controls">
+      <button aria-label="Private session unlocked. Shift+Enter saves to history" aria-pressed="false" class="private-toggle" data-private-session="word" title="Private session off: Shift+Enter saves to history" type="button"></button>
+      <label class="pattern-title" for="title-word">
+       Title
+       <input id="title-word" maxlength="80" placeholder="Untitled pattern" type="text"/>
+      </label>
+     </div>
+     <div aria-label="Save and export" class="workspace-actions">
+      <button aria-label="Save this pattern in this browser" class="icon-action" data-save="word" title="Save To Browser" type="button">
+       <svg aria-hidden="true" viewbox="0 0 24 24"><rect height="17" rx="2" width="20" x="2" y="3"></rect><path d="M2 8h20M12 11v6m0 0 3-3m-3 3-3-3"></path></svg>
+       <span>Save To Browser</span>
+      </button>
+      <button aria-label="Open export options" class="icon-action" data-open-export="word" title="Export To" type="button">
+       <svg aria-hidden="true" viewbox="0 0 24 24"><path d="M6 2h8l4 4v16H6zM14 2v5h5M9 10h3M9 13h2M14 11v7m0 0 3-3m-3 3-3-3"></path></svg>
+       <span>Export To</span>
+      </button>
+      <button aria-label="Download this site for offline use" class="icon-action" data-export-offline="word" title="Use Site Offline" type="button">
+       <svg aria-hidden="true" viewbox="0 0 24 24"><rect height="12" rx="2" width="18" x="3" y="3"></rect><path d="M1 19h22M12 6v7m0 0 3-3m-3 3-3-3"></path></svg>
+       <span>Use Site Offline</span>
+      </button>
+     </div>
+     <p aria-live="polite" class="toolbar-status" id="toolbar-status-word" role="status"></p>
+    </div>
     <div class="workspace" id="workspace-word">
      <section class="panel">
       <div class="panel-head">
@@ -229,11 +291,11 @@
       </label>
       <textarea aria-describedby="help-word" class="input-box" id="input-word" placeholder="Type or paste sample text&hellip;" spellcheck="false"></textarea>
       <div class="options" id="opts-word">
-       <label>
+       <label title="Treat runs of digits as one flexible number pattern.">
         <input checked="" id="digits-word" type="checkbox"/>
         Any number
        </label>
-       <label>
+       <label title="Treat consecutive spaces and tabs as one flexible whitespace pattern.">
         <input checked="" id="space-word" type="checkbox"/>
         Whitespace runs
        </label>
@@ -246,7 +308,7 @@
        <span class="key">
         Ctrl+V
        </span>
-       paste. Letters, numbers and whitespace become flexible patterns. Wrap exact text in {...}, for example {Invoice} 123.
+       paste. Letters, numbers and whitespace become flexible patterns. A ? means any one character; use {?} for a literal question mark. Wrap other exact text in {...}, for example {Invoice} 123.
       </p>
      </section>
      <section class="panel">
@@ -263,7 +325,7 @@
       </label>
       <textarea aria-label="Generated search pattern" class="output-box" id="out-word" placeholder="Generated pattern appears here&hellip;" spellcheck="false"></textarea>
       <button class="copy" data-copy="word">
-       Copy output &middot; Shift+Enter
+       Copy output
       </button>
       <p aria-live="polite" class="status" id="status-word" role="status">
       </p>
@@ -272,7 +334,7 @@
         <span class="key">
          Shift+Enter
         </span>
-        copy (output focused) &middot;
+        save to history (and copy when output is focused) &middot;
         <span class="key">
          Ctrl+C
         </span>
@@ -315,6 +377,72 @@
       to keep text literal. Hover or focus a token for a hint.
      </p>
     </section>
+    <section aria-labelledby="history-heading-word" class="history-panel">
+     <div class="history-heading">
+      <h2 id="history-heading-word">Local history</h2>
+      <span id="history-count-word">0 items</span>
+     </div>
+     <p class="history-note">Saved regex stays in this browser.</p>
+     <div class="history-list" id="history-list-word"></div>
+    </section>
+   </section>
+   <section class="view" hidden="" id="python">
+    <p class="eyebrow">Python / re</p>
+    <h1>Python re Builder</h1>
+    <p class="intro">Paste any sample text to generate a Python regular expression. Wrap text in {...} when every character must remain literal.</p>
+    <nav aria-label="Choose pattern target" class="target-tabs">
+     <button aria-selected="false" class="tab" data-page="docs" type="button">Google Docs</button>
+     <button aria-selected="false" class="tab" data-page="word" type="button">Microsoft Word</button>
+     <button aria-selected="true" class="tab" data-page="python" type="button">Python re</button>
+    </nav>
+    <div aria-label="Arrange editor panels" class="layout-switch" role="group">
+     <span class="layout-label">Layout</span>
+     <button aria-label="Place input and output side by side" aria-pressed="true" data-layout="horizontal" data-target="python" title="Side by side" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="18" rx="2" width="20" x="2" y="3"></rect><path d="M12 3v18"></path></svg></button>
+     <button aria-label="Stack input above output" aria-pressed="false" data-layout="vertical" data-target="python" title="Stack vertically" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="18" rx="2" width="20" x="2" y="3"></rect><path d="M2 12h20"></path></svg></button>
+    </div>
+    <div class="workspace-toolbar">
+     <div class="title-controls">
+      <button aria-label="Private session unlocked. Shift+Enter saves to history" aria-pressed="false" class="private-toggle" data-private-session="python" title="Private session off: Shift+Enter saves to history" type="button"></button>
+      <label class="pattern-title" for="title-python">Title<input id="title-python" maxlength="80" placeholder="Untitled pattern" type="text"/></label>
+     </div>
+     <div aria-label="Save and export" class="workspace-actions">
+      <button aria-label="Save this pattern in this browser" class="icon-action" data-save="python" title="Save To Browser" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="17" rx="2" width="20" x="2" y="3"></rect><path d="M2 8h20M12 11v6m0 0 3-3m-3 3-3-3"></path></svg><span>Save To Browser</span></button>
+      <button aria-label="Open export options" class="icon-action" data-open-export="python" title="Export To" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M6 2h8l4 4v16H6zM14 2v5h5M9 10h3M9 13h2M14 11v7m0 0 3-3m-3 3-3-3"></path></svg><span>Export To</span></button>
+      <button aria-label="Download this site for offline use" class="icon-action" data-export-offline="python" title="Use Site Offline" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="12" rx="2" width="18" x="3" y="3"></rect><path d="M1 19h22M12 6v7m0 0 3-3m-3 3-3-3"></path></svg><span>Use Site Offline</span></button>
+     </div>
+     <p aria-live="polite" class="toolbar-status" id="toolbar-status-python" role="status"></p>
+    </div>
+    <div class="workspace" id="workspace-python">
+     <section class="panel">
+      <div class="panel-head"><h2>Input</h2><span class="hint">Ctrl+V paste &middot; Enter newline</span></div>
+      <label class="field-label" for="input-python">Sample text or {exact text}</label>
+      <textarea aria-describedby="help-python" class="input-box" id="input-python" placeholder="Type or paste any sample text&hellip;" spellcheck="false"></textarea>
+      <div class="options" id="opts-python">
+       <label title="Treat runs of digits as one flexible Python digit pattern."><input checked="" id="digits-python" type="checkbox"/>Any number</label>
+       <label title="Treat consecutive spaces, tabs, and non-breaking spaces as one flexible pattern."><input checked="" id="space-python" type="checkbox"/>Whitespace runs</label>
+      </div>
+      <p class="subtle" id="help-python"><span class="key">Enter</span> newline &middot; <span class="key">Ctrl+V</span> paste. A ? means any one character; use {?} for a literal question mark. Wrap exact text in {...}.</p>
+     </section>
+     <section class="panel">
+      <div class="panel-head"><h2>Output</h2><span class="hint">Python re pattern</span></div>
+      <label class="field-label" for="out-python">Generated regular expression</label>
+      <textarea aria-label="Generated Python regular expression" class="output-box" id="out-python" placeholder="Generated pattern appears here&hellip;" spellcheck="false"></textarea>
+      <button class="copy" data-copy="python">Copy output</button>
+      <p aria-live="polite" class="status" id="status-python" role="status"></p>
+      <div class="shortcuts"><span><span class="key">Shift+Enter</span> save to history (and copy when output is focused) &middot; <span class="key">Ctrl+C</span> copy selected text</span></div>
+      <div class="note">Use the copied pattern with Python's <code>re</code> module, preferably in a raw string.</div>
+     </section>
+    </div>
+    <section aria-label="Insert Python re pattern tokens" class="token-tray">
+     <div class="token-heading"><h2>Insert patterns</h2><p>Drag into an editor or click to insert at the input cursor.</p></div>
+     <div class="token-row" id="tokens-python"></div>
+     <p class="subtle">Quick type: <span class="key">:start:</span>, <span class="key">:end:</span>, <span class="key">:boundary:</span>, or <span class="key">:digits:</span>. Type <span class="key">{exact text}</span> to keep text literal.</p>
+    </section>
+    <section aria-labelledby="history-heading-python" class="history-panel">
+     <div class="history-heading"><h2 id="history-heading-python">Local history</h2><span id="history-count-python">0 items</span></div>
+     <p class="history-note">Saved regex stays in this browser.</p>
+     <div class="history-list" id="history-list-python"></div>
+    </section>
    </section>
    <section class="view" hidden="" id="guide">
     <div class="guide-top">
@@ -326,7 +454,7 @@
        Syntax guide.
       </h1>
       <p class="intro">
-       Search by a character you pasted, a token like
+       Search by a character or decimal code point (for example, 33), a token like
        <code>
         \d
        </code>
@@ -337,7 +465,8 @@
     <label class="field-label" for="guide-search">
      Search syntax and characters
     </label>
-    <input autocomplete="off" class="search" id="guide-search" placeholder="Try: 3, tab, U+00A0, [, number, \d, ^t" spellcheck="false" type="search"/>
+    <textarea aria-describedby="guide-search-help" autocomplete="off" class="search" id="guide-search" placeholder="Try: 33, !, Tab, U+00A0, [, number, \d, ^t" rows="1" spellcheck="false"></textarea>
+    <p class="subtle" id="guide-search-help">Type or paste characters, names, patterns, decimal values, or Unicode code points. Tab inserts a Tab; Shift+Tab moves focus.</p>
     <div class="guide-controls">
      <div aria-label="Guide target" class="mode" role="group">
       <button aria-pressed="true" data-guide="docs">
@@ -345,6 +474,9 @@
       </button>
       <button aria-pressed="false" data-guide="word">
        Microsoft Word
+      </button>
+      <button aria-pressed="false" data-guide="python">
+       Python re
       </button>
      </div>
      <span id="guide-count">
@@ -365,7 +497,11 @@
      <a href="https://support.microsoft.com/en-us/office/find-and-replace-text-c6728c16-469e-43cd-afe4-7708c6c779b7" rel="noopener noreferrer" target="_blank">
       Word Find and Replace
      </a>
-     . Some operations are context-dependent; Word wildcards are not a one-to-one mapping to RE2.
+     &middot;
+     <a href="https://docs.python.org/3/library/re.html" rel="noopener noreferrer" target="_blank">
+      Python re
+     </a>
+     . Some operations are context-dependent; Word wildcards are not a one-to-one mapping to RE2 or Python re.
     </p>
    </section>
    <section class="view legal-view" hidden="" id="privacy">
@@ -393,7 +529,7 @@
       <code>
        slicksyntax-theme
       </code>
-      . You can clear it using your browser's site-data controls. Text you type into the app is not saved in that local storage.
+      . You can clear it using your browser's site-data controls. Patterns are saved locally only when you use Save To Browser; saved titles, inputs, outputs, and options remain on this device until you delete them or clear site data.
      </p>
      <h2>
       Hosting and external links
@@ -406,9 +542,6 @@
      </h2>
      <p>
       This policy may be changed at any time. The date above identifies this version. We do not promise advance notice of revisions.
-     </p>
-     <p>
-      This is a plain-language description, not legal advice.
      </p>
     </div>
    </section>
@@ -433,7 +566,7 @@
       Provided as is
      </h2>
      <p>
-      The website and all its content are provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo;, without warranties of any kind to the extent permitted by applicable law. Patterns may not work in every version of Microsoft Word or Google Docs.
+      The website and all its content are provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo;, without warranties of any kind to the extent permitted by applicable law. Patterns may not work in every version of Microsoft Word or Google Docs, or with every Python runtime.
      </p>
      <h2>
       Changes and availability
@@ -447,15 +580,37 @@
      <p>
       To the extent permitted by law, the site operator is not liable for damages or losses arising from use of the tool. Nothing here excludes rights or obligations that cannot legally be excluded.
      </p>
-     <h2>
-      Not legal advice
-     </h2>
-     <p>
-      These terms and the privacy policy are informational drafts, not legal advice. They should be reviewed by a qualified professional before a public launch if legal compliance is important.
-     </p>
     </div>
    </section>
   </main>
+  <dialog aria-labelledby="export-dialog-title" id="export-dialog">
+   <form method="dialog">
+    <h2 id="export-dialog-title">Export To</h2>
+    <p>Choose a format. Browser history is excluded unless you switch it on.</p>
+    <label class="browser-export-switch" for="include-browser-history">
+     <span>
+      <strong>Browser history</strong>
+      <small>Include regex saved in this browser</small>
+     </span>
+     <input id="include-browser-history" role="switch" type="checkbox"/>
+    </label>
+    <div aria-label="Export format" class="export-format-actions">
+     <button data-export-format="json" type="button">JSON</button>
+     <button data-export-format="txt" type="button">TXT</button>
+     <button data-export-format="clipboard" type="button">Clipboard</button>
+    </div>
+    <div class="import-block">
+     <label class="import-button">
+      Import JSON
+      <input accept="application/json,.json" id="import-json" type="file"/>
+     </label>
+     <small>Import restores structured records to browser-local history.</small>
+    </div>
+    <div class="dialog-actions">
+     <button value="cancel">Close</button>
+    </div>
+   </form>
+  </dialog>
   <footer class="site-footer">
    <div class="footer-inner">
     <span>
@@ -478,6 +633,10 @@
     </span>
    </div>
   </footer>
+  <script defer="" src="pattern-generator.js">
+  </script>
+  <script defer="" src="guide-search.js">
+  </script>
   <script defer="" src="script.js">
   </script>
  </body>
